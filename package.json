@@ -1,0 +1,30 @@
+{
+  "name": "the-living-room",
+  "version": "1.0.0",
+  "description": "The Living Room: Tuning into Sunday Afternoon — an interactive exhibition companion by The (She.LL)",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lucide-react": "^1.63.0",
+    "mind-ar": "^1.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^6.4.5"
+  },
+  "private": true,
+  "type": "module",
+  "overrides": {
+    "canvas": "npm:empty-npm-package@1.0.0"
+  }
+}

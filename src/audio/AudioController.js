@@ -311,6 +311,11 @@ class AudioControllerImpl {
     }
   }
 
+  /** A single page turn (magazine flip-throughs). */
+  playPageTurn() {
+    if (this.ctx) this._pageTurn(this.ctx.currentTime + 0.01);
+  }
+
   _pageTurn(t) {
     this._noise(this.sfxBus, t, 0.28, { type: 'bandpass', freq: 1200, freqEnd: 4200, q: 0.8, gain: 0.3, attack: 0.04 });
     this._noise(this.sfxBus, t + 0.22, 0.12, { type: 'highpass', freq: 3000, gain: 0.15 });

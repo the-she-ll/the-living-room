@@ -57,7 +57,7 @@ export const FREQUENCIES = {
     id: 'table',
     band: '97.9',
     title: 'The Coffee Table Pulpit',
-    subtitle: 'Jet & Essence',
+    subtitle: 'Jet, Ebony, Essence & the Black Press',
     color: '#8A3319',
     stem: 'shaker',
     stemLabel: 'Page-Turn Shaker',
@@ -68,6 +68,7 @@ export const FREQUENCIES = {
     archive: [
       'John H. Johnson founded Johnson Publishing Company in Chicago. Ebony launched in 1945 and the pocket-sized weekly Jet followed in 1951. Jet became famous as a source of news that white-owned papers ignored. In 1955 it published photographs of Emmett Till’s open casket, which his mother Mamie Till-Mobley chose to show, and those images pushed millions toward the civil rights movement.',
       'Essence launched in May 1970 as a magazine for Black women. It covered beauty, fashion, careers, politics and family life with Black women at the center, years before mainstream fashion magazines regularly featured them.',
+      'They shared the table with other titles. Ebony (1945) celebrated Black achievement in glossy photo essays. Black Enterprise, founded by Earl G. Graves in 1970, covered Black business, careers and wealth-building. Black World, called Negro Digest until 1970, published the essays, poetry and criticism of the Black Arts Movement until it closed in 1976.',
       'Displayed on the coffee table, these magazines were more than reading material. They were an archive, a conversation starter for guests, and proof of a thriving Black public sphere. Many families kept back issues for decades.',
     ],
     photoCaption: 'Coffee table still life (archival image placeholder)',
@@ -195,14 +196,63 @@ export const FRONT_ROOM_NOTES = [
 ];
 
 /**
- * Illustrative magazine recreations. These are NOT reproductions of real
- * covers. Add licensed scans via `image` (e.g. 'images/covers/jet-1971.jpg').
+ * Coffee-table magazine stack: shown in the web flip viewer AND the AR lens.
+ * Each cover turns over to reveal that issue's story on the back.
+ *
+ * To add a real cover:
+ *   1. Save the scan as public/images/covers/<file>.jpg (portrait, ~800px wide).
+ *   2. Fill in the entry: `image`, `date`, `coverLine`, `story`, `credit`, and
+ *      `sourceUrl` (where the scan came from, e.g. its Google Books page).
+ * Entries without an `image` show a plain "cover coming soon" page, never a
+ * drawing. Add as many issues per title as you like (duplicate an entry); 5–10 total
+ * keeps the AR flip-through snappy.
  */
 export const MAGAZINES = [
-  { masthead: 'JET', issue: 'Weekly · 1971', headline: 'The News Our Papers Wouldn’t Print', bg: '#8A3319', accent: '#F2E6CC', image: '' },
-  { masthead: 'ESSENCE', issue: 'Monthly · 1972', headline: 'Beauty on Our Own Terms', bg: '#1A535C', accent: '#D49B24', image: '' },
-  { masthead: 'JET', issue: 'Weekly · 1974', headline: 'Hometown Graduates Make History', bg: '#D49B24', accent: '#2E1C14', image: '' },
-  { masthead: 'ESSENCE', issue: 'Monthly · 1976', headline: 'Sisters Building Business', bg: '#4F5D2F', accent: '#F2E6CC', image: '' },
+  {
+    masthead: 'JET',
+    date: 'Issue date',
+    coverLine: 'Cover story headline',
+    story: 'A two-to-four sentence summary of this issue’s cover story: who was on the cover, what happened, and why it mattered to readers.',
+    image: '',
+    credit: 'Jet, Johnson Publishing Company',
+    sourceUrl: '',
+  },
+  {
+    masthead: 'EBONY',
+    date: 'Issue date',
+    coverLine: 'Cover story headline',
+    story: 'A two-to-four sentence summary of this issue’s cover story: who was on the cover, what happened, and why it mattered to readers.',
+    image: '',
+    credit: 'Ebony, Johnson Publishing Company',
+    sourceUrl: '',
+  },
+  {
+    masthead: 'ESSENCE',
+    date: 'Issue date',
+    coverLine: 'Cover story headline',
+    story: 'A two-to-four sentence summary of this issue’s cover story: who was on the cover, what happened, and why it mattered to readers.',
+    image: '',
+    credit: 'Essence, Essence Communications',
+    sourceUrl: '',
+  },
+  {
+    masthead: 'BLACK ENTERPRISE',
+    date: 'Issue date',
+    coverLine: 'Cover story headline',
+    story: 'A two-to-four sentence summary of this issue’s cover story: who was on the cover, what happened, and why it mattered to readers.',
+    image: '',
+    credit: 'Black Enterprise, Earl G. Graves Ltd.',
+    sourceUrl: '',
+  },
+  {
+    masthead: 'BLACK WORLD',
+    date: 'Issue date',
+    coverLine: 'Cover story headline',
+    story: 'A two-to-four sentence summary of this issue’s cover story: who was on the cover, what happened, and why it mattered to readers.',
+    image: '',
+    credit: 'Black World (formerly Negro Digest), Johnson Publishing Company',
+    sourceUrl: '',
+  },
 ];
 
 /** Liner-notes tracklist for the vinyl interactive (synth stand-ins). */

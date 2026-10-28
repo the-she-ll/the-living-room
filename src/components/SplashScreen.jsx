@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Radio } from 'lucide-react';
-import { SITE } from '../data/site';
+import { SITE, RIGHTS } from '../data/site';
+import CreditsDrawer from './CreditsDrawer';
 import { FREQUENCIES } from '../data/frequencies';
 
 /**
@@ -12,6 +13,7 @@ export default function SplashScreen({ pendingFrequency, onEnter }) {
   const [ready, setReady] = useState(false);
   const [logoOk, setLogoOk] = useState(true);
   const [leaving, setLeaving] = useState(false);
+  const [credits, setCredits] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 1400);
@@ -28,7 +30,7 @@ export default function SplashScreen({ pendingFrequency, onEnter }) {
 
   return (
     <div
-      className={`wood-panel fixed inset-0 z-[70] flex flex-col items-center justify-center px-8 text-center transition-opacity duration-500 ${leaving ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+      className={`wood-panel fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-y-auto px-8 py-6 text-center transition-opacity duration-500 ${leaving ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
     >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,155,36,0.22),transparent_65%)]" />
 
@@ -53,7 +55,7 @@ export default function SplashScreen({ pendingFrequency, onEnter }) {
       </h1>
       <p className="font-display relative mt-3 text-xl text-mustard-light italic">{SITE.tagline}</p>
 
-      <div className="relative mt-10 h-24">
+      <div className="relative mt-10 min-h-24">
         {!ready ? (
           <div className="flex flex-col items-center gap-3" aria-live="polite">
             <div className="flex gap-1.5">
@@ -81,6 +83,15 @@ export default function SplashScreen({ pendingFrequency, onEnter }) {
           </div>
         )}
       </div>
+
+      {/* Rights notice for the whole app: quiet, but up front. */}
+      <p className="relative mt-8 max-w-sm text-center text-[11px] leading-snug text-parchment/55">
+        {RIGHTS.short}{' '}
+        <button type="button" onClick={() => setCredits(true)} className="underline underline-offset-2 hover:text-parchment">
+          Credits &amp; rights
+        </button>
+      </p>
+      <CreditsDrawer open={credits} onClose={() => setCredits(false)} zClass="z-[80]" />
     </div>
   );
 }

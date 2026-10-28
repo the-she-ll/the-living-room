@@ -5,7 +5,8 @@
  * downloaded when a visitor opens the AR Lens.
  */
 import * as THREE from 'three';
-import { FREQUENCIES } from '../data/frequencies';
+import { FREQUENCIES, MAGAZINES } from '../data/frequencies';
+import { asset, RIGHTS } from '../data/site';
 import AudioController from '../audio/AudioController';
 
 const PALETTE = ['#8A3319', '#D49B24', '#4F5D2F', '#1A535C', '#B4502C'];
@@ -51,30 +52,6 @@ function cardTexture({ eyebrow, title, body, bg = '#F2E6CC', ink = '#2B1A10', ac
     .slice(0, 8)
     .forEach((l, i) => ctx.fillText(l, 60, 262 + i * 50));
 
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
-function coverTexture(masthead, headline, bg, fg) {
-  const c = document.createElement('canvas');
-  c.width = 384;
-  c.height = 512;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, c.width, c.height);
-  ctx.fillStyle = fg;
-  ctx.font = '900 96px Fraunces, Georgia, serif';
-  ctx.fillText(masthead, 24, 110);
-  ctx.globalAlpha = 0.25;
-  ctx.beginPath();
-  ctx.arc(192, 300, 110, Math.PI, 0);
-  ctx.lineTo(302, 420);
-  ctx.lineTo(82, 420);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.font = '800 34px Fraunces, Georgia, serif';
-  wrap(ctx, headline, 330).forEach((l, i) => ctx.fillText(l, 24, 460 + i * 36 - 36));
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
@@ -145,43 +122,158 @@ function buildTurntable(group) {
   };
 }
 
-const COVERS = [
-  ['JET', 'The News Our Papers Wouldn’t Print', '#8A3319', '#F2E6CC'],
-  ['ESSENCE', 'Beauty on Our Own Terms', '#1A535C', '#D49B24'],
-  ['JET', 'Hometown Graduates Make History', '#D49B24', '#2E1C14'],
-  ['ESSENCE', 'Sisters Building Business', '#4F5D2F', '#F2E6CC'],
-  ['JET', 'Sunday Best', '#B4502C', '#F2E6CC'],
-];
+/* ---------------- coffee table: real-cover flip-through ---------------- */
 
-function buildTable(group) {
-  const mags = COVERS.map(([m, h, bg, fg], i) => {
-    const side = new THREE.MeshBasicMaterial({ color: 0xf2e6cc });
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.48, 0.015), [
-      side, side, side, side,
-      new THREE.MeshBasicMaterial({ map: coverTexture(m, h, bg, fg) }),
-      side,
-    ]);
-    group.add(mesh);
-    return mesh;
+const PAGE_W = 0.42;
+const PAGE_H = 0.63; // 2:3 magazine proportions
+
+function paperCanvas(w = 512, h = 768) {
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d');
+  return { c, ctx };
+}
+
+function toTexture(canvas) {
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Plain paper page for issues whose cover scan hasn't been added (no illustration). */
+function comingSoonTexture(m) {
+  const { c, ctx } = paperCanvas();
+  ctx.fillStyle = '#efe4cc';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = 'rgba(43,26,16,.35)';
+  ctx.setLineDash([10, 8]);
+  ctx.lineWidth = 3;
+  ctx.strokeRect(40, 40, c.width - 80, c.height - 80);
+  ctx.fillStyle = '#2b1a10';
+  ctx.textAlign = 'center';
+  ctx.font = '900 64px Fraunces, Georgia, serif';
+  wrap(ctx, m.masthead, c.width - 120).forEach((l, i) => ctx.fillText(l, c.width / 2, 330 + i * 70));
+  ctx.font = '500 26px "DM Sans", sans-serif';
+  ctx.globalAlpha = 0.6;
+  ctx.fillText(m.date, c.width / 2, 470);
+  ctx.fillText('Cover image coming soon', c.width / 2, 520);
+  return toTexture(c);
+}
+
+/** The back of each cover: that issue's story, plus its credit and the rights line. */
+function storyTexture(m, rightsLine) {
+  const { c, ctx } = paperCanvas();
+  ctx.fillStyle = '#f7efdc';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#2b1a10';
+  ctx.font = '600 20px "DM Sans", sans-serif';
+  ctx.globalAlpha = 0.6;
+  ctx.fillText(`${m.masthead} · ${m.date}`.toUpperCase(), 40, 64);
+  ctx.globalAlpha = 1;
+  ctx.font = '900 40px Fraunces, Georgia, serif';
+  let y = 120;
+  wrap(ctx, m.coverLine, c.width - 80).slice(0, 3).forEach((l) => {
+    ctx.fillText(l, 40, y);
+    y += 46;
   });
-  const card = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.9, 0.56),
-    new THREE.MeshBasicMaterial({
-      map: cardTexture({ eyebrow: '97.9 FM · Jet & Essence', title: 'The Coffee Table Pulpit', body: FREQUENCIES.table.archive[0], accent: '#8A3319' }),
-      transparent: true,
-    }),
-  );
-  card.position.set(0, -0.75, 0.1);
-  group.add(card);
+  ctx.font = '400 25px "DM Sans", sans-serif';
+  y += 14;
+  wrap(ctx, m.story, c.width - 80).slice(0, 14).forEach((l) => {
+    ctx.fillText(l, 40, y);
+    y += 34;
+  });
+  ctx.font = '400 17px "DM Sans", sans-serif';
+  ctx.globalAlpha = 0.55;
+  const foot = wrap(ctx, `© ${m.credit}. ${rightsLine}`, c.width - 80).slice(0, 3);
+  foot.forEach((l, i) => ctx.fillText(l, 40, c.height - 40 - (foot.length - 1 - i) * 22));
+  return toTexture(c);
+}
 
-  return (t) => {
-    mags.forEach((mesh, i) => {
-      const spread = (Math.sin(t * 0.8) * 0.5 + 0.5) * 0.9;
-      mesh.position.set((i - 2) * 0.12 * spread, 0.1 + Math.sin(t * 1.4 + i) * 0.02, 0.12 + i * 0.06);
-      mesh.rotation.z = (i - 2) * 0.18 * spread;
-      mesh.rotation.y = Math.sin(t + i) * 0.15;
+function buildTable(group, { magazines, rightsLine }) {
+  const loader = new THREE.TextureLoader();
+  const n = magazines.length;
+  // Sized relative to the coffee-table target (1 unit = target width) so the
+  // open spread floats just over the table without leaving the screen.
+  const SCALE = 0.95;
+  const spread = new THREE.Group();
+  spread.scale.setScalar(SCALE);
+  spread.position.set(-(PAGE_W * SCALE) / 2, 0.16, 0.18);
+  group.add(spread);
+
+  // soft shadow so the pages read as an object above the table
+  const shadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(PAGE_W * 2.3, PAGE_H * 1.15),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.16 }),
+  );
+  shadow.scale.setScalar(SCALE);
+  shadow.position.set(0, 0.14, 0.02);
+  group.add(shadow);
+
+  const geo = new THREE.PlaneGeometry(PAGE_W, PAGE_H);
+
+  const leaves = magazines.map((m, i) => {
+    const pivot = new THREE.Group();
+    const coverMat = new THREE.MeshBasicMaterial({ map: comingSoonTexture(m) });
+    if (m.image) {
+      loader.load(
+        m.image,
+        (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          coverMat.map?.dispose();
+          coverMat.map = tex;
+          coverMat.needsUpdate = true;
+        },
+        undefined,
+        () => {}, // keep the "coming soon" page if the scan is missing
+      );
+    }
+    // Both faces occupy x 0…W from the spine (pivot origin): the cover faces
+    // the viewer, the story faces away, so turning the page shows the story on the left.
+    const front = new THREE.Mesh(geo, coverMat);
+    front.position.x = PAGE_W / 2;
+    const back = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: storyTexture(m, rightsLine) }));
+    back.rotation.y = Math.PI;
+    back.position.set(PAGE_W / 2, 0, -0.001);
+    pivot.add(front, back);
+    spread.add(pivot);
+    return { pivot, angle: 0 };
+  });
+
+  const api = {
+    flipped: 0,
+    total: n,
+    onChange: null,
+    go(d) {
+      const next = Math.max(0, Math.min(n, api.flipped + d));
+      if (next === api.flipped) return;
+      api.flipped = next;
+      AudioController.playPageTurn();
+      api.onChange?.(api.state());
+    },
+    next: () => api.go(1),
+    prev: () => api.go(-1),
+    state: () => ({ flipped: api.flipped, total: n, reading: api.flipped ? magazines[api.flipped - 1] : null }),
+  };
+
+  const update = (t) => {
+    spread.position.y = 0.16 + Math.sin(t * 1.2) * 0.006;
+    // closed: centre the cover; open: centre the spine; finished: centre the last story
+    const offset = api.flipped === 0 ? -PAGE_W / 2 : api.flipped >= n ? PAGE_W / 2 : 0;
+    spread.position.x += (offset * SCALE - spread.position.x) * 0.12;
+    leaves.forEach((leaf, i) => {
+      const target = i < api.flipped ? -Math.PI + i * 0.004 : 0;
+      leaf.angle += (target - leaf.angle) * 0.14;
+      leaf.pivot.rotation.y = leaf.angle;
+      // stack order: unturned covers top-down on the right, turned pages bottom-up on the left;
+      // lift each page mid-turn so it arcs over its neighbours
+      const p = Math.abs(leaf.angle) / Math.PI;
+      const base = i < api.flipped ? i * 0.004 : (n - i) * 0.004;
+      leaf.pivot.position.z = base + Math.sin(p * Math.PI) * 0.08;
     });
   };
+
+  return { update, api };
 }
 
 function buildGeneric(group, id) {
@@ -217,6 +309,11 @@ const BUILDERS = { portraits: buildPortraits, turntable: buildTurntable, table: 
  *   'insecure' | 'no-camera' | 'denied' | 'no-targets' | 'failed'
  */
 export async function startAR({ container, targetsSrc, targetOrder, onFound, onLost }) {
+  const content = {
+    magazines: MAGAZINES.map((m) => ({ ...m, image: asset(m.image) })),
+    rightsLine: RIGHTS.short,
+  };
+  const controls = {};
   const fail = (code, message) => Object.assign(new Error(message), { code });
 
   if (!window.isSecureContext) throw fail('insecure', 'Camera requires HTTPS.');
@@ -256,7 +353,9 @@ export async function startAR({ container, targetsSrc, targetOrder, onFound, onL
     if (!FREQUENCIES[id]) return;
     const anchor = mindar.addAnchor(index);
     const build = BUILDERS[id] || ((g) => buildGeneric(g, id));
-    const update = build(anchor.group);
+    const built = build(anchor.group, content);
+    const update = typeof built === 'function' ? built : built.update;
+    if (built.api) controls[id] = built.api;
     updaters.push({ anchor, update });
     anchor.onTargetFound = () => onFound?.(id);
     anchor.onTargetLost = () => onLost?.(id);
@@ -280,6 +379,8 @@ export async function startAR({ container, targetsSrc, targetOrder, onFound, onL
   });
 
   return {
+    /** Per-artifact interactive controls, e.g. controls.table.next() */
+    controls,
     stop() {
       renderer.setAnimationLoop(null);
       try {

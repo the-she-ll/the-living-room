@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
  * Mobile bottom sheet: slides up, swipe the handle down to dismiss, ESC to
  * close, locks background scroll (iOS-safe).
  */
-export default function Drawer({ open, onClose, title, eyebrow, accent = '#8A3319', children, tone = 'parchment', labelId }) {
+export default function Drawer({ open, onClose, title, eyebrow, accent = '#8A3319', children, tone = 'parchment', labelId, zClass = 'z-50' }) {
   const [mounted, setMounted] = useState(open);
   const [visible, setVisible] = useState(false);
   const [dragY, setDragY] = useState(0);
@@ -55,7 +55,7 @@ export default function Drawer({ open, onClose, title, eyebrow, accent = '#8A331
   const panelTone = tone === 'dark' ? 'bg-umber-deep text-parchment' : 'parchment';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" role="presentation">
+    <div className={`fixed inset-0 ${zClass} flex items-end justify-center`} role="presentation">
       <div
         className={`absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}

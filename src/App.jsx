@@ -10,11 +10,12 @@ import SymphonyPlayer from './components/SymphonyPlayer';
 import Guestbook, { TapeReelMarquee, useGuestbook } from './components/Guestbook';
 import TuningOverlay from './components/TuningOverlay';
 import ARView from './components/ARView';
+import CreditsDrawer from './components/CreditsDrawer';
 import AudioController from './audio/AudioController';
 import { useAudio } from './hooks/useAudio';
 import { useDiscoveries, resolveFrequencyParam } from './hooks/useDiscoveries';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { STORAGE_KEYS, SITE } from './data/site';
+import { STORAGE_KEYS, SITE, RIGHTS } from './data/site';
 
 /** Read the NFC/QR deep link once, then strip it so a refresh doesn't replay it. */
 function takeDeepLink() {
@@ -40,6 +41,7 @@ export default function App() {
   const [poemOpen, setPoemOpen] = useState(false);
   const [guestbookOpen, setGuestbookOpen] = useState(false);
   const [arOpen, setArOpen] = useState(false);
+  const [creditsOpen, setCreditsOpen] = useState(false);
   const [entries, setEntries] = useGuestbook();
   const [ambientPref, setAmbientPref] = useLocalStorage(STORAGE_KEYS.ambient, true);
   const { ambientOn } = useAudio();
@@ -187,9 +189,15 @@ export default function App() {
           <p>
             {SITE.title}: {SITE.tagline} · © {SITE.artist}
           </p>
-          <button type="button" onClick={resetProgress} className="mt-2 inline-flex items-center gap-1 underline-offset-2 hover:underline">
-            <RotateCcw size={11} /> Reset progress
-          </button>
+          <p className="mx-auto mt-1 max-w-sm">{RIGHTS.short}</p>
+          <div className="mt-2 flex justify-center gap-4">
+            <button type="button" onClick={() => setCreditsOpen(true)} className="underline underline-offset-2">
+              Credits &amp; rights
+            </button>
+            <button type="button" onClick={resetProgress} className="inline-flex items-center gap-1 underline-offset-2 hover:underline">
+              <RotateCcw size={11} /> Reset progress
+            </button>
+          </div>
         </footer>
       </main>
 
@@ -214,6 +222,7 @@ export default function App() {
         }}
       />
       <PoemViewer open={poemOpen} onClose={() => setPoemOpen(false)} discovered={discovered} complete={complete} />
+      <CreditsDrawer open={creditsOpen} onClose={() => setCreditsOpen(false)} />
       <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} entries={entries} setEntries={setEntries} />
 
       {arOpen && (

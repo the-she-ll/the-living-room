@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { CameraOff, Loader2, Map as MapIcon, ScanLine, X } from 'lucide-react';
+import { CameraOff, ChevronLeft, ChevronRight, Loader2, Map as MapIcon, ScanLine, X } from 'lucide-react';
 import { FREQUENCIES } from '../data/frequencies';
-import { SITE } from '../data/site';
+import { SITE, RIGHTS } from '../data/site';
 
 const ERRORS = {
   insecure: {
@@ -37,6 +37,8 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const [error, setError] = useState(null);
   const [tracking, setTracking] = useState(null);
   const [lastFound, setLastFound] = useState(null);
+  const [mag, setMag] = useState(null); // coffee-table flip-through state
+  const swipeX = useRef(null);
   const onFoundRef = useRef(onFound);
   onFoundRef.current = onFound;
 
@@ -59,6 +61,11 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
         if (cancelled) s.stop();
         else {
           session.current = s;
+          const table = s.controls?.table;
+          if (table) {
+            table.onChange = setMag;
+            setMag(table.state());
+          }
           setStatus('scanning');
         }
       } catch (err) {
@@ -75,10 +82,21 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   }, []);
 
   const found = lastFound ? FREQUENCIES[lastFound] : null;
+  const table = session.current?.controls?.table;
+  const showMag = status === 'scanning' && tracking === 'table' && table && mag;
   const e = error ? ERRORS[error] : null;
 
   return (
-    <div className="fixed inset-0 z-[55] bg-black text-parchment">
+    <div
+      className="fixed inset-0 z-[55] bg-black text-parchment"
+      onTouchStart={(ev) => (swipeX.current = ev.touches[0].clientX)}
+      onTouchEnd={(ev) => {
+        if (!showMag || swipeX.current == null) return;
+        const dx = ev.changedTouches[0].clientX - swipeX.current;
+        if (Math.abs(dx) > 50) (dx < 0 ? table.next : table.prev)();
+        swipeX.current = null;
+      }}
+    >
       <div ref={container} className="absolute inset-0 overflow-hidden [&_canvas]:max-w-none [&_video]:max-w-none" />
 
       {/* top bar */}
@@ -114,7 +132,30 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
       )}
 
       {status === 'scanning' && found && (
-        <div className="safe-bottom absolute inset-x-0 bottom-0 z-10 px-4">
+        <div className="safe-bottom absolute inset-x-0 bottom-0 z-10 space-y-2 px-4">
+          {showMag && (
+            <div className="mx-auto max-w-md rounded-2xl bg-umber-deep/85 p-3 backdrop-blur">
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={table.prev} disabled={mag.flipped === 0} aria-label="Previous page" className="grid h-11 w-11 place-items-center rounded-full bg-parchment/15 disabled:opacity-30">
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="min-w-0 flex-1 text-center leading-tight">
+                  <p className="led-text text-lg">
+                    {mag.flipped === 0 ? 'TAP NEXT TO OPEN' : mag.flipped >= mag.total ? 'END OF THE STACK' : `ISSUE ${mag.flipped} OF ${mag.total}`}
+                  </p>
+                  {mag.reading && (
+                    <p className="truncate text-xs text-parchment/80">
+                      {mag.reading.masthead} · {mag.reading.date}
+                    </p>
+                  )}
+                </div>
+                <button type="button" onClick={table.next} disabled={mag.flipped >= mag.total} aria-label="Next page" className="grid h-11 w-11 place-items-center rounded-full bg-mustard text-umber disabled:opacity-30">
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+              <p className="mt-2 text-center text-[10px] leading-snug text-parchment/55">{RIGHTS.short}</p>
+            </div>
+          )}
           <div className="parchment animate-rise mx-auto max-w-md rounded-2xl p-4 shadow-2xl" style={{ borderTop: `6px solid ${found.color}` }}>
             <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">{found.band} FM · Tuned in</p>
             <p className="font-display text-xl font-black">{found.title}</p>

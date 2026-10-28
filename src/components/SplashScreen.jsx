@@ -32,22 +32,22 @@ export default function SplashScreen({ pendingFrequency, onEnter }) {
     >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,155,36,0.22),transparent_65%)]" />
 
-      <div className="relative mb-8 grid h-40 w-40 place-items-center">
-        <div className="absolute inset-0 animate-spin-slow rounded-full border-2 border-dashed border-mustard/40" />
-        <div className="absolute inset-3 rounded-full bg-umber-deep shadow-[0_0_60px_rgba(212,155,36,0.35)]" />
+      <div className="relative mb-8 w-64 animate-fade sm:w-80">
         {logoOk ? (
           <img
             src={SITE.logoSrc}
-            alt={`${SITE.artist} logo`}
-            className="relative h-28 w-28 object-contain"
+            alt={SITE.artist}
+            width="1000"
+            height="736"
+            className="h-auto w-full drop-shadow-[0_0_28px_rgba(212,155,36,0.35)]"
             onError={() => setLogoOk(false)}
           />
         ) : (
-          <span className="relative font-display text-xl font-black text-mustard">{SITE.artist}</span>
+          <span className="font-display text-3xl font-black text-mustard">{SITE.artist}</span>
         )}
       </div>
 
-      <p className="relative mb-2 text-xs tracking-[0.3em] text-mustard uppercase">{SITE.artist} presents</p>
+      <p className="relative mb-2 text-xs tracking-[0.3em] text-mustard uppercase">presents</p>
       <h1 className="font-display relative text-5xl leading-[0.95] font-black text-parchment sm:text-6xl">
         {SITE.title}
       </h1>

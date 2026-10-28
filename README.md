@@ -42,7 +42,7 @@ Write one URL to each NFC sticker (any NFC writer app works, e.g. NFC Tools):
 
 | What | Where |
 |---|---|
-| **Your logo** | Replace `public/logo.svg` (same filename), or set `SITE.logoSrc` in `src/data/site.js` (e.g. `/logo.png`). It's used on the loading screen, in the header and as the favicon. |
+| **Logo** | `public/logo.webp` (full logo, loading screen) and `public/logo-mark.webp` (emblem only: header, `favicon.png`, `apple-touch-icon.png`). Paths are set in `SITE` in `src/data/site.js`. |
 | Titles, history text, riddles, reflection prompts | `src/data/frequencies.js` → `FREQUENCIES` |
 | Notable figures (Living Pantheon) | `PANTHEON`. Add `image` and `audioSrc` (e.g. `audio/pantheon/baldwin.mp3`) |
 | Meeting notes, magazine covers, liner notes, voicemails | `FRONT_ROOM_NOTES`, `MAGAZINES` (`image`), `LINER_NOTES`, `VOICEMAILS` (`audioSrc`) |

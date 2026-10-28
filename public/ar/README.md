@@ -1,7 +1,9 @@
 # AR image targets
 
 The AR Lens needs one compiled file here: **`targets.mind`**.
-Until it exists, the app shows a friendly "lens is still being calibrated" screen and offers the illustrated map instead, so nothing breaks.
+If it's missing, the app shows a friendly "lens is still being calibrated" screen and offers the illustrated map instead, so nothing breaks.
+
+> **Current file = TEST TARGETS.** The `targets.mind` in this folder was compiled from five crops of a *test* painting (a digital mock-up of the room), so you can try the lens by pointing your phone at that image on another screen. **Replace it** with targets compiled from photos of the real, finished canvas before the exhibition opens. The real canvas's colors, texture and framing will differ, and the test targets won't recognize it.
 
 ## Make `targets.mind`
 

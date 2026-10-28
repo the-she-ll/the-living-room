@@ -9,7 +9,7 @@ export default function Header({ arActive, onToggleAR, ambientOn, onToggleAmbien
     <header className="safe-top sticky top-0 z-40 border-b border-black/40 bg-umber/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 pb-2">
         {logoOk ? (
-          <img src={SITE.logoSrc} alt="" className="h-9 w-9 shrink-0 object-contain" onError={() => setLogoOk(false)} />
+          <img src={SITE.logoMarkSrc} alt={SITE.artist} className="h-10 w-8 shrink-0 object-contain" onError={() => setLogoOk(false)} />
         ) : null}
         <div className="min-w-0 flex-1 leading-tight">
           <p className="font-display truncate text-lg font-black text-parchment">{SITE.title}</p>

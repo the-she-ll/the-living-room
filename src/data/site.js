@@ -11,8 +11,9 @@ export const SITE = {
   title: 'The Living Room',
   tagline: 'Tuning into Sunday Afternoon',
   artist: 'The (She.LL)',
-  // Replace /public/logo.svg with your logo (or point this at e.g. asset('logo.png')).
-  logoSrc: asset('logo.svg'),
+  // Full logo (splash screen) and emblem-only mark (header). Files live in /public.
+  logoSrc: asset('logo.webp'),
+  logoMarkSrc: asset('logo-mark.webp'),
   // Compiled MindAR image-target file (see /public/ar/README.md).
   arTargetsSrc: asset('ar/targets.mind'),
   /**

@@ -22,11 +22,15 @@ function takeDeepLink() {
   const id = resolveFrequencyParam();
   if (window.location.search) {
     const url = new URL(window.location.href);
-    ['frequency', 'unlock', 'f'].forEach((k) => url.searchParams.delete(k));
+    ['frequency', 'unlock', 'f', 'guestbook'].forEach((k) => url.searchParams.delete(k));
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   }
   return id;
 }
+
+// ?guestbook (e.g. the tags behind the family photos) opens straight to the Living Guestbook.
+// Read before takeDeepLink() cleans the address bar.
+const GUESTBOOK_LINK = new URLSearchParams(window.location.search).has('guestbook');
 
 // Read once at module load. (StrictMode would otherwise call an initializer twice, after the URL was already cleaned.)
 const DEEP_LINK = takeDeepLink();
@@ -75,6 +79,7 @@ export default function App() {
     if (ambientPref) AudioController.setAmbient(true);
     setEntered(true);
     if (pending) setTimeout(() => tuneIn(pending), 350);
+    else if (GUESTBOOK_LINK) setTimeout(() => setGuestbookOpen(true), 350);
   };
 
   const toggleAmbient = async () => {
@@ -111,12 +116,12 @@ export default function App() {
   // First visit: show the walkthrough once the app is at rest. A visitor who
   // arrived by tapping a tag sees their story first, then the guide.
   useEffect(() => {
-    if (entered && !onboarded && !tuning && !openId && !arOpen) {
+    if (entered && !onboarded && !tuning && !openId && !arOpen && !guestbookOpen) {
       const t = setTimeout(() => setGuideOpen(true), 400);
       return () => clearTimeout(t);
     }
     return undefined;
-  }, [entered, onboarded, tuning, openId, arOpen]);
+  }, [entered, onboarded, tuning, openId, arOpen, guestbookOpen]);
 
   const closeGuide = () => {
     setGuideOpen(false);

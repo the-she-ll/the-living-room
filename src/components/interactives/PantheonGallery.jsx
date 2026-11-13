@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Pause, Volume2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, Pause, Volume2 } from 'lucide-react';
 import { PANTHEON } from '../../data/frequencies';
 import AudioController from '../../audio/AudioController';
 import { asset } from '../../data/site';
@@ -33,10 +33,9 @@ export default function PantheonGallery({ accent, clipPlaying }) {
         <div className="rounded-xl border-[6px] border-[#b8892b] bg-[linear-gradient(160deg,#4a2f22,#2e1c14)] p-5">
           <div key={i} className="animate-rise">
             <div className="mb-4 flex items-center gap-4">
-              <div className="film-grain grid h-20 w-16 shrink-0 place-items-center overflow-hidden rounded-sm bg-parchment-dark sepia">
-                {/* PLACEHOLDER portrait: add `image` to PANTHEON entries to show licensed photos */}
+              <div className="film-grain grid h-24 w-[74px] shrink-0 place-items-center overflow-hidden rounded-sm bg-parchment-dark">
                 {p.image ? (
-                  <img src={asset(p.image)} alt={p.name} className="h-full w-full object-cover" />
+                  <img src={asset(p.image)} alt={p.name} className="h-full w-full object-cover object-top" />
                 ) : (
                   <span className="font-display text-2xl font-black text-umber/70">
                     {p.name.split(' ').map((w) => w[0]).join('')}
@@ -60,19 +59,38 @@ export default function PantheonGallery({ accent, clipPlaying }) {
         <button type="button" onClick={() => go(-1)} aria-label="Previous figure" className="grid h-11 w-11 place-items-center rounded-full bg-ink/10">
           <ChevronLeft />
         </button>
-        <button
-          type="button"
-          onClick={() => (playing ? AudioController.stopClip() : AudioController.playClip(clipId, p.audioSrc, 4.5))}
-          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full font-bold text-parchment"
-          style={{ background: accent }}
-        >
-          {playing ? <Pause size={16} /> : <Volume2 size={16} />}
-          {playing ? 'Playing…' : p.audioSrc ? 'Hear their voice' : 'Hear snippet (placeholder)'}
-        </button>
+        {p.audioSrc ? (
+          <button
+            type="button"
+            onClick={() => (playing ? AudioController.stopClip() : AudioController.playClip(clipId, p.audioSrc, 4.5))}
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full font-bold text-parchment"
+            style={{ background: accent }}
+          >
+            {playing ? <Pause size={16} /> : <Volume2 size={16} />}
+            {playing ? 'Playing…' : 'Hear their voice'}
+          </button>
+        ) : (
+          // No licensed clip yet: open the archive that holds the recording.
+          <a
+            href={p.listenUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full font-bold text-parchment"
+            style={{ background: accent }}
+          >
+            <Volume2 size={16} /> Hear their voice <ExternalLink size={13} />
+          </a>
+        )}
         <button type="button" onClick={() => go(1)} aria-label="Next figure" className="grid h-11 w-11 place-items-center rounded-full bg-ink/10">
           <ChevronRight />
         </button>
       </div>
+      {(p.imageCredit || (!p.audioSrc && p.listenLabel)) && (
+        <p className="mt-2 text-[11px] leading-snug opacity-55">
+          {p.imageCredit && <>Photo: {p.imageCredit} </>}
+          {!p.audioSrc && p.listenLabel && <>Audio: {p.listenLabel} (opens the archive’s site).</>}
+        </p>
+      )}
       <div className="mt-2 flex justify-center gap-1.5">
         {PANTHEON.map((_, n) => (
           <span key={n} className={`h-1.5 rounded-full transition-all ${n === i ? 'w-5 bg-ink' : 'w-1.5 bg-ink/25'}`} />

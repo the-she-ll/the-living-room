@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { CameraOff, ChevronLeft, ChevronRight, Loader2, Map as MapIcon, ScanLine, X } from 'lucide-react';
+import { CameraOff, ChevronLeft, ChevronRight, ExternalLink, Loader2, Map as MapIcon, Pause, ScanLine, Volume2, X } from 'lucide-react';
 import { FREQUENCIES } from '../data/frequencies';
 import { SITE, RIGHTS } from '../data/site';
+import AudioController from '../audio/AudioController';
+import { useAudio } from '../hooks/useAudio';
 
 const ERRORS = {
   insecure: {
@@ -38,6 +40,9 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const [tracking, setTracking] = useState(null);
   const [lastFound, setLastFound] = useState(null);
   const [mag, setMag] = useState(null); // coffee-table flip-through state
+  const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
+  const { clipPlaying } = useAudio();
+  const [showBio, setShowBio] = useState(false);
   const swipeX = useRef(null);
   const onFoundRef = useRef(onFound);
   onFoundRef.current = onFound;
@@ -66,6 +71,15 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
             table.onChange = setMag;
             setMag(table.state());
           }
+          const portraits = s.controls?.portraits;
+          if (portraits) {
+            portraits.onChange = (st) => {
+              AudioController.stopClip();
+              setShowBio(false);
+              setPan(st);
+            };
+            setPan(portraits.state());
+          }
           setStatus('scanning');
         }
       } catch (err) {
@@ -84,6 +98,11 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const found = lastFound ? FREQUENCIES[lastFound] : null;
   const table = session.current?.controls?.table;
   const showMag = status === 'scanning' && tracking === 'table' && table && mag;
+  const portraits = session.current?.controls?.portraits;
+  const showPan = status === 'scanning' && tracking === 'portraits' && portraits && pan;
+  const person = pan?.person;
+  const clipId = person ? `ar-${person.name}` : null;
+  const swiper = showMag ? table : showPan ? portraits : null;
   const e = error ? ERRORS[error] : null;
 
   return (
@@ -91,9 +110,9 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
       className="fixed inset-0 z-[55] bg-black text-parchment"
       onTouchStart={(ev) => (swipeX.current = ev.touches[0].clientX)}
       onTouchEnd={(ev) => {
-        if (!showMag || swipeX.current == null) return;
+        if (!swiper || swipeX.current == null) return;
         const dx = ev.changedTouches[0].clientX - swipeX.current;
-        if (Math.abs(dx) > 50) (dx < 0 ? table.next : table.prev)();
+        if (Math.abs(dx) > 50) (dx < 0 ? swiper.next : swiper.prev)();
         swipeX.current = null;
       }}
     >
@@ -133,6 +152,61 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
 
       {status === 'scanning' && found && (
         <div className="safe-bottom absolute inset-x-0 bottom-0 z-10 space-y-2 px-4">
+          {showPan && person && (
+            <div className="mx-auto max-w-md rounded-2xl bg-umber-deep/90 p-3 backdrop-blur">
+              <div className="flex items-start gap-2">
+                <button type="button" onClick={portraits.prev} aria-label="Previous trailblazer" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-parchment/15">
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="min-w-0 flex-1 text-center leading-tight">
+                  <p className="led-text text-sm">{pan.index + 1} OF {pan.total} · THE LIVING PANTHEON</p>
+                  <p className="font-display text-xl font-black">{person.name}</p>
+                  <p className="text-[11px] text-parchment/70">
+                    {person.years} · {person.role}
+                  </p>
+                </div>
+                <button type="button" onClick={portraits.next} aria-label="Next trailblazer" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+              <p className="font-display mt-2 text-center text-[15px] leading-snug italic">“{person.quote}”</p>
+              <p className="text-center text-[10px] text-parchment/55">— {person.source}</p>
+              {showBio ? (
+                <p className="mt-2 text-[12px] leading-snug text-parchment/85">
+                  {person.bio}{' '}
+                  <button type="button" onClick={() => setShowBio(false)} className="font-bold text-mustard">
+                    Less
+                  </button>
+                </p>
+              ) : (
+                <button type="button" onClick={() => setShowBio(true)} className="mx-auto mt-1 block text-[12px] font-bold text-mustard">
+                  About {person.name.split(' ')[0]} ▾
+                </button>
+              )}
+              {person.audioSrc ? (
+                <button
+                  type="button"
+                  onClick={() => (clipPlaying === clipId ? AudioController.stopClip() : AudioController.playClip(clipId, person.audioSrc, 20))}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-mustard py-2.5 font-bold text-umber"
+                >
+                  {clipPlaying === clipId ? <Pause size={16} /> : <Volume2 size={16} />} {clipPlaying === clipId ? 'Playing…' : 'Hear their voice'}
+                </button>
+              ) : (
+                <a
+                  href={person.listenUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-mustard py-2.5 font-bold text-umber"
+                >
+                  <Volume2 size={16} /> Hear their voice <ExternalLink size={13} />
+                </a>
+              )}
+              <p className="mt-1.5 text-center text-[9px] leading-snug text-parchment/50">
+                {showBio && person.imageCredit ? `Photo: ${person.imageCredit} ` : ''}
+                {RIGHTS.short}
+              </p>
+            </div>
+          )}
           {showMag && (
             <div className="mx-auto max-w-md rounded-2xl bg-umber-deep/85 p-3 backdrop-blur">
               <div className="flex items-center gap-2">
@@ -156,6 +230,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
               <p className="mt-2 text-center text-[10px] leading-snug text-parchment/55">{RIGHTS.short}</p>
             </div>
           )}
+          {!showPan && !showMag && (
           <div className="parchment animate-rise mx-auto max-w-md rounded-2xl p-4 shadow-2xl" style={{ borderTop: `6px solid ${found.color}` }}>
             <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">{found.band} FM · Tuned in</p>
             <p className="font-display text-xl font-black">{found.title}</p>
@@ -168,6 +243,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
               Open the story
             </button>
           </div>
+          )}
         </div>
       )}
 

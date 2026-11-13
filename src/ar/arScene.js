@@ -5,7 +5,7 @@
  * downloaded when a visitor opens the AR Lens.
  */
 import * as THREE from 'three';
-import { FREQUENCIES, MAGAZINES } from '../data/frequencies';
+import { FREQUENCIES, MAGAZINES, PANTHEON } from '../data/frequencies';
 import { asset, RIGHTS } from '../data/site';
 import AudioController from '../audio/AudioController';
 
@@ -60,30 +60,103 @@ function cardTexture({ eyebrow, title, body, bg = '#F2E6CC', ink = '#2B1A10', ac
 /* ----------------------------- overlays -------------------------------- */
 // MindAR anchor space: the target image is 1 unit wide, centred at origin.
 
-function buildPortraits(group) {
-  const f = FREQUENCIES.portraits;
-  const card = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.1, 0.69),
-    new THREE.MeshBasicMaterial({
-      map: cardTexture({ eyebrow: `${f.band} FM · ${f.subtitle}`, title: f.title, body: f.archive[0], accent: f.color }),
-      transparent: true,
-    }),
-  );
-  card.position.set(0, 0.85, 0.15);
-  group.add(card);
+/* ----------- portrait: flip through trailblazers over the painting ----------- */
 
-  const halo = new THREE.Mesh(
-    new THREE.RingGeometry(0.62, 0.66, 64),
-    new THREE.MeshBasicMaterial({ color: 0xd49b24, transparent: true, opacity: 0.8, side: THREE.DoubleSide }),
-  );
-  group.add(halo);
+// Where the painted portrait sits inside its AR target (target width = 1 unit).
+const FRAME = { x: 0.017, y: -0.015, w: 0.92, h: 1.23 };
 
-  return (t) => {
-    card.position.y = 0.85 + Math.sin(t * 1.6) * 0.03;
-    card.rotation.y = Math.sin(t * 0.7) * 0.08;
-    halo.material.opacity = 0.5 + Math.sin(t * 2.2) * 0.3;
-    halo.scale.setScalar(1 + Math.sin(t * 2.2) * 0.04);
+function comingSoonPortrait(p) {
+  const c = document.createElement('canvas');
+  c.width = 600;
+  c.height = 780;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#2e1c14';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = 'rgba(212,155,36,.5)';
+  ctx.setLineDash([12, 10]);
+  ctx.lineWidth = 4;
+  ctx.strokeRect(40, 40, c.width - 80, c.height - 80);
+  ctx.fillStyle = '#f2e6cc';
+  ctx.textAlign = 'center';
+  ctx.font = '900 56px Fraunces, Georgia, serif';
+  wrap(ctx, p.name, c.width - 120).forEach((l, i) => ctx.fillText(l, c.width / 2, 360 + i * 64));
+  ctx.fillStyle = '#e8bd5a';
+  ctx.font = '500 26px "DM Sans", sans-serif';
+  ctx.fillText('Portrait coming soon', c.width / 2, 470);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function buildPortraits(group, { pantheon }, shared) {
+  const loader = new THREE.TextureLoader();
+  const textures = pantheon.map((p) => {
+    const slot = { tex: comingSoonPortrait(p), aspect: 600 / 780 };
+    if (p.image) {
+      loader.load(p.image, (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        slot.tex = tex;
+        slot.aspect = tex.image.width / tex.image.height;
+        slot.ready = true;
+      });
+    }
+    return slot;
+  });
+
+  // gold frame + photo, sized to each image's own shape ("contain" in the painted frame)
+  const holder = new THREE.Group();
+  holder.position.set(FRAME.x, FRAME.y, 0.02);
+  group.add(holder);
+  const frame = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0xc99a2e }));
+  frame.position.z = -0.002;
+  const photo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: textures[0].tex }));
+  holder.add(frame, photo);
+
+  const api = shared.api || {
+    index: 0,
+    total: pantheon.length,
+    onChange: null,
+    go(d) {
+      api.index = (api.index + d + api.total) % api.total;
+      AudioController.playPageTurn();
+      api.onChange?.(api.state());
+    },
+    next: () => api.go(1),
+    prev: () => api.go(-1),
+    state: () => ({ index: api.index, total: api.total, person: pantheon[api.index] }),
   };
+  shared.api = api;
+
+  let shown = -1;
+  let outgoing = null; // the photo turning away
+  let flip = 0; // 1 → 0 progress of the card turn
+  const update = () => {
+    const slot = textures[api.index];
+    if (shown !== api.index) {
+      if (shown !== -1) {
+        outgoing = textures[shown];
+        flip = 1;
+      }
+      shown = api.index;
+    }
+    // the card turns edge-on, swaps photo at the midpoint, then turns back
+    flip = Math.max(0, flip - 0.06);
+    holder.rotation.y = Math.sin(flip * Math.PI) * (Math.PI / 2) * (flip > 0.5 ? 1 : -1) * 0.98;
+    const show = flip > 0.5 && outgoing ? outgoing : slot;
+    if (photo.material.map !== show.tex) {
+      photo.material.map = show.tex;
+      photo.material.needsUpdate = true;
+    }
+    let w = FRAME.w;
+    let h = w / show.aspect;
+    if (h > FRAME.h) {
+      h = FRAME.h;
+      w = h * show.aspect;
+    }
+    photo.scale.set(w, h, 1);
+    frame.scale.set(w + 0.035, h + 0.035, 1);
+  };
+  return { update, api };
 }
 
 function buildTurntable(group) {
@@ -316,6 +389,7 @@ const BUILDERS = { portraits: buildPortraits, turntable: buildTurntable, table: 
  */
 export async function startAR({ container, targetsSrc, targetOrder, onFound, onLost }) {
   const content = {
+    pantheon: PANTHEON.map((p) => ({ ...p, image: asset(p.image) })),
     magazines: MAGAZINES.map((m) => ({ ...m, image: asset(m.image) })),
     rightsLine: RIGHTS.short,
   };

@@ -102,47 +102,66 @@ export const FREQUENCIES = {
 /* ------------------------------------------------------------------ */
 
 /**
- * PLACEHOLDER pantheon. The artist will finalize this list. Quotes below are
- * well-documented public statements; `audioSrc` is empty until licensed
- * speech recordings are added to /public/audio/pantheon/.
+ * The Living Pantheon: four trailblazers. Shown in the portrait AR overlay
+ * (flipping over the painted portrait) and in the web gallery.
+ *
+ * - `image`: in public/images/pantheon/. Leave '' to show "portrait coming soon".
+ * - `audioSrc`: a licensed clip (e.g. 'audio/pantheon/angela-davis.mp3').
+ *   Until one is licensed, `listenUrl` opens the archive's own page instead.
+ * - Quotes are kept short and cited.
  */
 export const PANTHEON = [
   {
-    name: 'James Baldwin',
-    years: '1924–1987',
-    role: 'Novelist · Essayist · Witness',
-    quote:
-      'Not everything that is faced can be changed, but nothing can be changed until it is faced.',
-    source: 'The New York Times Book Review, 1962',
-    bio: 'Baldwin’s essays, including The Fire Next Time (1963), turned private grief and public injustice into prose that still reads like prophecy.',
+    name: 'Angela Davis',
+    years: 'b. 1944',
+    role: 'Philosopher · Activist · Author',
+    quote: 'Radical simply means “grasping things at the root.”',
+    source: 'Women, Culture & Politics, 1989',
+    bio: 'A philosopher and political activist, Davis was jailed in 1970 and acquitted in 1972 after an international campaign to free her. This poster is from that campaign. She went on to teach for decades and to lead the movement to end mass incarceration.',
+    image: 'images/pantheon/angela-davis.jpg',
+    imageCredit: '“Free Angela Davis Now!” poster, New York Committee to Free Angela Davis, c. 1971. Library of Congress, Prints & Photographs Division, Yanker Poster Collection.',
     audioSrc: '',
+    listenUrl: 'https://folkways.si.edu/angela-davis-speaks/african-american-spoken-american-history/music/album/smithsonian',
+    listenLabel: 'Angela Davis Speaks (1971), Smithsonian Folkways',
   },
   {
-    name: 'Nina Simone',
-    years: '1933–2003',
-    role: 'Pianist · Singer · Activist',
-    quote: 'An artist’s duty, as far as I’m concerned, is to reflect the times.',
-    source: 'Interview, c. 1969',
-    bio: 'A classically trained pianist, Simone wrote protest anthems like "Mississippi Goddam" and "To Be Young, Gifted and Black."',
+    name: 'Huey P. Newton',
+    years: '1942–1989',
+    role: 'Co-founder, Black Panther Party',
+    quote: 'We want freedom. We want power to determine the destiny of our Black Community.',
+    source: 'Black Panther Party Ten-Point Program, 1966',
+    bio: 'In 1966 Newton and Bobby Seale founded the Black Panther Party for Self-Defense in Oakland. Alongside armed patrols, the Party ran community survival programs, including free breakfasts for children and free health clinics. Newton later earned a PhD from UC Santa Cruz.',
+    image: '',
+    imageCredit: '',
     audioSrc: '',
+    listenUrl: 'https://americanarchive.org/catalog/cpb-aacip_151-3b5w669n9c',
+    listenLabel: 'Interview for Eyes on the Prize, American Archive of Public Broadcasting',
   },
   {
-    name: 'Fannie Lou Hamer',
-    years: '1917–1977',
-    role: 'Organizer · Voting Rights Leader',
-    quote: 'I’m sick and tired of being sick and tired.',
-    source: 'Speech, 1964',
-    bio: 'A sharecropper turned organizer, Hamer co-founded the Mississippi Freedom Democratic Party and testified before the 1964 Democratic National Convention.',
+    name: 'Langston Hughes',
+    years: '1901–1967',
+    role: 'Poet · Novelist · Playwright',
+    quote: 'Hold fast to dreams / For if dreams die…',
+    source: '“Dreams,” 1923',
+    bio: 'A leading voice of the Harlem Renaissance, Hughes wrote poems, novels, plays and newspaper columns about everyday Black life in the rhythms of jazz and the blues. His first published poem, “The Negro Speaks of Rivers,” appeared in 1921.',
+    image: 'images/pantheon/langston-hughes.jpg',
+    imageCredit: 'Langston Hughes, c. 1943. Library of Congress, Prints & Photographs Division, FSA/OWI Collection.',
     audioSrc: '',
+    listenUrl: 'https://folkways.si.edu/langston-hughes/the-voice-of/african-american-spoken-poetry/album/smithsonian',
+    listenLabel: 'The Voice of Langston Hughes, Smithsonian Folkways',
   },
   {
-    name: 'Shirley Chisholm',
-    years: '1924–2005',
-    role: 'Congresswoman · Presidential Candidate',
-    quote: 'Unbought and Unbossed.',
-    source: 'Campaign slogan, 1968',
-    bio: 'In 1968 she became the first Black woman elected to the U.S. Congress. In 1972 she became the first Black candidate to seek a major party’s presidential nomination.',
+    name: 'Octavia E. Butler',
+    years: '1947–2006',
+    role: 'Science Fiction Writer',
+    quote: 'All that you touch / You Change.',
+    source: 'Parable of the Sower, 1993',
+    bio: 'Butler put Black women at the center of science fiction with novels like Kindred (1979) and Parable of the Sower (1993). In 1995 she became the first science fiction writer to receive a MacArthur “genius” grant.',
+    image: '',
+    imageCredit: '',
     audioSrc: '',
+    listenUrl: 'https://kpfa.org/area941/episode/octavia-butler-1983/',
+    listenLabel: '1983 interview, KPFA Radio',
   },
 ];
 

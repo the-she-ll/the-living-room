@@ -42,7 +42,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const [mag, setMag] = useState(null); // coffee-table flip-through state
   const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
   const { clipPlaying } = useAudio();
-  const [panInfo, setPanInfo] = useState(true); // portrait panel expanded?
+  const [panInfo, setPanInfo] = useState(false); // portrait panel starts collapsed; visitors tap "Show info"
   const [panCredits, setPanCredits] = useState(false); // photo credit revealed?
   const swipeX = useRef(null);
   const onFoundRef = useRef(onFound);

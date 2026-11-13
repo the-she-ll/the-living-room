@@ -15,7 +15,7 @@ export const SITE = {
   logoSrc: asset('logo.webp'),
   logoMarkSrc: asset('logo-mark.webp'),
   // Compiled MindAR image-target file (see /public/ar/README.md).
-  arTargetsSrc: asset('ar/targets.mind'),
+  arTargetsSrc: `${asset('ar/targets.mind')}?v=${__BUILD_ID__}`,
   /**
    * Order of images used when compiling targets.mind.
    * Index 0 = first image uploaded to the MindAR compiler, etc.

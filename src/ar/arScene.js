@@ -328,7 +328,7 @@ export async function startAR({ container, targetsSrc, targetOrder, onFound, onL
 
   // Verify the compiled target file exists (SPA servers return index.html for missing files).
   try {
-    const res = await fetch(targetsSrc, { cache: 'force-cache' });
+    const res = await fetch(targetsSrc);
     const type = res.headers.get('content-type') || '';
     if (!res.ok || type.includes('text/html')) throw new Error();
   } catch {

@@ -3,7 +3,9 @@
 The AR Lens needs one compiled file here: **`targets.mind`**.
 If it's missing, the app shows a friendly "lens is still being calibrated" screen and offers the illustrated map instead, so nothing breaks.
 
-> **Current file:** compiled from a photo of the **finished canvas** (the whole painting in one shot). It works, but close-up photos of each zone (below) will give the lens more detail, especially for the portrait.
+> **Current file:** compiled from the artist's **close-up photos** of each zone on the finished canvas. Tested against a separate photo of the whole painting, plus dim, warm, glare, far-away and 20° side views: all recognized. Very steep side views (about 30° or more) can miss; once locked, tracking follows the visitor as they move.
+>
+> The file URL gets a `?v=<build>` tag on every deploy, so phones never keep a stale cached copy.
 
 ## The three AR zones
 

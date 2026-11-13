@@ -126,7 +126,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
             <ScanLine className="absolute inset-0 m-auto animate-led-pulse text-mustard/70" size={48} />
           </div>
           <p className="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] max-w-xs px-4 text-center text-sm font-bold text-parchment drop-shadow">
-            Point at the portrait of the woman on the wall, the turntable on the dresser, or the magazines on the coffee table.
+            Point at the portrait of the woman on the wall, the turntable on the dresser, or the magazines on the coffee table. Stand in front of it and let it fill most of your screen.
           </p>
         </div>
       )}

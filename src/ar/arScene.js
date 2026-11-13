@@ -190,7 +190,7 @@ function storyTexture(m, rightsLine) {
   return toTexture(c);
 }
 
-function buildTable(group, { magazines, rightsLine }) {
+function buildTable(group, { magazines, rightsLine }, shared) {
   const loader = new THREE.TextureLoader();
   const n = magazines.length;
   // Sized relative to the coffee-table target (1 unit = target width) so the
@@ -240,6 +240,9 @@ function buildTable(group, { magazines, rightsLine }) {
     return { pivot, angle: 0 };
   });
 
+  // Extra angled-view targets of the table share one flip-through state, so the
+  // page you're on survives the lens switching between them.
+  if (shared.api) return { update: makeUpdate(shared.api), api: shared.api };
   const api = {
     flipped: 0,
     total: n,
@@ -256,7 +259,11 @@ function buildTable(group, { magazines, rightsLine }) {
     state: () => ({ flipped: api.flipped, total: n, reading: api.flipped ? magazines[api.flipped - 1] : null }),
   };
 
-  const update = (t) => {
+  shared.api = api;
+  return { update: makeUpdate(api), api };
+
+  function makeUpdate(api) {
+    return (t) => {
     spread.position.y = 0.16 + Math.sin(t * 1.2) * 0.006;
     // closed: centre the cover; open: centre the spine; finished: centre the last story
     const offset = api.flipped === 0 ? -PAGE_W / 2 : api.flipped >= n ? PAGE_W / 2 : 0;
@@ -271,9 +278,8 @@ function buildTable(group, { magazines, rightsLine }) {
       const base = i < api.flipped ? i * 0.004 : (n - i) * 0.004;
       leaf.pivot.position.z = base + Math.sin(p * Math.PI) * 0.08;
     });
-  };
-
-  return { update, api };
+    };
+  }
 }
 
 function buildGeneric(group, id) {
@@ -314,6 +320,7 @@ export async function startAR({ container, targetsSrc, targetOrder, onFound, onL
     rightsLine: RIGHTS.short,
   };
   const controls = {};
+  const shared = {}; // per-artifact state shared by duplicate (angled-view) targets
   const fail = (code, message) => Object.assign(new Error(message), { code });
 
   if (!window.isSecureContext) throw fail('insecure', 'Camera requires HTTPS.');
@@ -353,7 +360,8 @@ export async function startAR({ container, targetsSrc, targetOrder, onFound, onL
     if (!FREQUENCIES[id]) return;
     const anchor = mindar.addAnchor(index);
     const build = BUILDERS[id] || ((g) => buildGeneric(g, id));
-    const built = build(anchor.group, content);
+    shared[id] ||= {};
+    const built = build(anchor.group, content, shared[id]);
     const update = typeof built === 'function' ? built : built.update;
     if (built.api) controls[id] = built.api;
     updaters.push({ anchor, update });

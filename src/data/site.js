@@ -19,8 +19,11 @@ export const SITE = {
   /**
    * Order of images used when compiling targets.mind.
    * Index 0 = first image uploaded to the MindAR compiler, etc.
+   * Only these three artifacts have AR; the chair and phone are found by NFC or the map.
+   * The turntable and table appear three times: straight on, then as seen from the
+   * left and from the right, so visitors standing off to the side are still recognized.
    */
-  arTargetOrder: ['portraits', 'turntable', 'table', 'phone', 'chair'],
+  arTargetOrder: ['portraits', 'turntable', 'table', 'turntable', 'turntable', 'table', 'table'],
 };
 
 /**

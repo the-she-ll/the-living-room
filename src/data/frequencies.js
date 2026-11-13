@@ -178,6 +178,9 @@ export const PANTHEON = [
  *   1. Save the scan as public/images/covers/<file>.jpg (portrait, ~800px wide).
  *   2. Fill in the entry: `image`, `date`, `coverLine`, `story`, `credit`, and
  *      `sourceUrl` (where the scan came from, e.g. its Google Books page).
+ * Optional inside page: `insideImage` (one photo cropped from the article,
+ * not a full text page), `insideCaption` (your own words) and `insideCredit`
+ * (photographer, if printed).
  * Entries without an `image` show a plain "cover coming soon" page, never a
  * drawing. Add as many issues per title as you like (duplicate an entry); 5–10 total
  * keeps the AR flip-through snappy.
@@ -185,12 +188,15 @@ export const PANTHEON = [
 export const MAGAZINES = [
   {
     masthead: 'JET',
-    date: 'Issue date',
-    coverLine: 'Cover story headline',
-    story: 'A two-to-four sentence summary of this issue’s cover story: who was on the cover, what happened, and why it mattered to readers.',
-    image: '',
-    credit: 'Jet, Johnson Publishing Company',
-    sourceUrl: '',
+    date: 'February 10, 1972',
+    coverLine: 'Shirley Chisholm Kicks Off Campaign for U.S. President',
+    story: 'Congresswoman Shirley Chisholm of Brooklyn made the cover weeks after launching her run for the 1972 Democratic presidential nomination. Already the first Black woman elected to Congress (1968), she became the first Black candidate and the first woman to seek the Democratic nomination for president. On a family’s coffee table, her face made a Black woman in the White House feel possible.',
+    image: 'images/covers/jet-1972-02-10.jpg',
+    credit: 'Jet, February 10, 1972, Johnson Publishing Company. Cover scan via Google Books',
+    sourceUrl: 'https://books.google.com/books?id=xlsDAAAAMBAJ&printsec=frontcover',
+    insideImage: '',
+    insideCaption: '',
+    insideCredit: '',
   },
   {
     masthead: 'EBONY',

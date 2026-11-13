@@ -235,32 +235,83 @@ function comingSoonTexture(m) {
 }
 
 /** The back of each cover: that issue's story, plus its credit and the rights line. */
+/**
+ * The back of each cover: an optional photo from the article (with caption),
+ * then the issue's story summary, its credit and the rights line.
+ */
 function storyTexture(m, rightsLine) {
   const { c, ctx } = paperCanvas();
-  ctx.fillStyle = '#f7efdc';
-  ctx.fillRect(0, 0, c.width, c.height);
-  ctx.fillStyle = '#2b1a10';
-  ctx.font = '600 20px "DM Sans", sans-serif';
-  ctx.globalAlpha = 0.6;
-  ctx.fillText(`${m.masthead} · ${m.date}`.toUpperCase(), 40, 64);
-  ctx.globalAlpha = 1;
-  ctx.font = '900 40px Fraunces, Georgia, serif';
-  let y = 120;
-  wrap(ctx, m.coverLine, c.width - 80).slice(0, 3).forEach((l) => {
-    ctx.fillText(l, 40, y);
-    y += 46;
-  });
-  ctx.font = '400 25px "DM Sans", sans-serif';
-  y += 14;
-  wrap(ctx, m.story, c.width - 80).slice(0, 14).forEach((l) => {
-    ctx.fillText(l, 40, y);
-    y += 34;
-  });
-  ctx.font = '400 17px "DM Sans", sans-serif';
-  ctx.globalAlpha = 0.55;
-  const foot = wrap(ctx, `© ${m.credit}. ${rightsLine}`, c.width - 80).slice(0, 3);
-  foot.forEach((l, i) => ctx.fillText(l, 40, c.height - 40 - (foot.length - 1 - i) * 22));
-  return toTexture(c);
+  const tex = toTexture(c);
+
+  const draw = (photo) => {
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.fillStyle = '#f7efdc';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.fillStyle = '#2b1a10';
+    let y = 52;
+    ctx.font = '600 18px "DM Sans", sans-serif';
+    ctx.globalAlpha = 0.6;
+    ctx.fillText(`${m.masthead} · ${m.date}`.toUpperCase(), 36, y);
+    ctx.globalAlpha = 1;
+    y += 14;
+
+    if (photo) {
+      // fit the article photo into a band across the top of the page
+      const boxW = c.width - 72;
+      const boxH = 250;
+      const k = Math.min(boxW / photo.width, boxH / photo.height);
+      const w = photo.width * k;
+      const h = photo.height * k;
+      ctx.drawImage(photo, 36 + (boxW - w) / 2, y, w, h);
+      y += h + 22;
+      if (m.insideCaption) {
+        ctx.font = 'italic 400 17px "DM Sans", sans-serif';
+        ctx.globalAlpha = 0.75;
+        wrap(ctx, m.insideCaption, c.width - 72).slice(0, 2).forEach((l) => {
+          ctx.fillText(l, 36, y);
+          y += 21;
+        });
+        ctx.globalAlpha = 1;
+        y += 8;
+      }
+    } else {
+      y += 30;
+    }
+
+    const small = Boolean(photo);
+    ctx.font = `900 ${small ? 30 : 40}px Fraunces, Georgia, serif`;
+    y += small ? 18 : 24;
+    wrap(ctx, m.coverLine, c.width - 72).slice(0, 3).forEach((l) => {
+      ctx.fillText(l, 36, y);
+      y += small ? 35 : 46;
+    });
+    ctx.font = `400 ${small ? 19 : 25}px "DM Sans", sans-serif`;
+    y += 6;
+    const lineH = small ? 25 : 34;
+    const footTop = c.height - 92;
+    wrap(ctx, m.story, c.width - 72).forEach((l) => {
+      if (y > footTop - 4) return;
+      ctx.fillText(l, 36, y);
+      y += lineH;
+    });
+
+    ctx.font = '400 15px "DM Sans", sans-serif';
+    ctx.globalAlpha = 0.55;
+    const credits = [`© ${m.credit}.`, m.insideCredit ? `Photo: ${m.insideCredit}.` : '', rightsLine].filter(Boolean).join(' ');
+    const foot = wrap(ctx, credits, c.width - 72).slice(0, 4);
+    foot.forEach((l, i) => ctx.fillText(l, 36, c.height - 30 - (foot.length - 1 - i) * 19));
+    ctx.globalAlpha = 1;
+    tex.needsUpdate = true;
+  };
+
+  draw(null);
+  if (m.insideImage) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => draw(img);
+    img.src = m.insideImage;
+  }
+  return tex;
 }
 
 function buildTable(group, { magazines, rightsLine }, shared) {
@@ -390,7 +441,7 @@ const BUILDERS = { portraits: buildPortraits, turntable: buildTurntable, table: 
 export async function startAR({ container, targetsSrc, targetOrder, onFound, onLost }) {
   const content = {
     pantheon: PANTHEON.map((p) => ({ ...p, image: asset(p.image) })),
-    magazines: MAGAZINES.map((m) => ({ ...m, image: asset(m.image) })),
+    magazines: MAGAZINES.map((m) => ({ ...m, image: asset(m.image), insideImage: asset(m.insideImage) })),
     rightsLine: RIGHTS.short,
   };
   const controls = {};

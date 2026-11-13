@@ -26,9 +26,18 @@ function StoryPage({ m }) {
       <p className="text-[9px] tracking-widest uppercase opacity-60">
         {m.masthead} · {m.date}
       </p>
+      {m.insideImage && (
+        <>
+          <img src={asset(m.insideImage)} alt={m.insideCaption || ''} className="mt-1.5 max-h-[38%] w-full object-contain" />
+          {m.insideCaption && <p className="mt-1 text-[9px] leading-tight italic opacity-70">{m.insideCaption}</p>}
+        </>
+      )}
       <p className="font-display mt-1 text-[15px] leading-tight font-black">{m.coverLine}</p>
       <p className="mt-2 text-[11px] leading-snug opacity-85">{m.story}</p>
-      <p className="mt-auto pt-2 text-[8px] leading-tight opacity-50">© {m.credit}</p>
+      <p className="mt-auto pt-2 text-[8px] leading-tight opacity-50">
+        © {m.credit}
+        {m.insideCredit && <> · Photo: {m.insideCredit}</>}
+      </p>
     </div>
   );
 }

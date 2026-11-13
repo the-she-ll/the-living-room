@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Camera, CameraOff, Volume2, VolumeX } from 'lucide-react';
+import { Camera, CameraOff, CircleHelp, Volume2, VolumeX } from 'lucide-react';
 import { SITE } from '../data/site';
 
-export default function Header({ arActive, onToggleAR, ambientOn, onToggleAmbient }) {
+export default function Header({ arActive, onToggleAR, ambientOn, onToggleAmbient, onHelp }) {
   const [logoOk, setLogoOk] = useState(true);
 
   return (
@@ -17,6 +17,15 @@ export default function Header({ arActive, onToggleAR, ambientOn, onToggleAmbien
             {SITE.tagline} · {SITE.artist}
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={onHelp}
+          aria-label="How it works"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-parchment/20 text-parchment/70"
+        >
+          <CircleHelp size={18} />
+        </button>
 
         <button
           type="button"
@@ -39,7 +48,7 @@ export default function Header({ arActive, onToggleAR, ambientOn, onToggleAmbien
           }`}
         >
           {arActive ? <CameraOff size={16} /> : <Camera size={16} />}
-          <span>{arActive ? 'Exit AR' : 'AR Lens'}</span>
+          <span>{arActive ? 'Exit' : 'AR'}</span>
         </button>
       </div>
     </header>

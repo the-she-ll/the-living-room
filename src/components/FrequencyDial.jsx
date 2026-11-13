@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Pause, Play } from 'lucide-react';
 import { FREQUENCIES, FREQUENCY_ORDER } from '../data/frequencies';
-import { useAudioLevel } from '../hooks/useAudio';
+import { useAudio, useAudioLevel } from '../hooks/useAudio';
 import AudioController from '../audio/AudioController';
 
 const MIN = 87.5;
@@ -9,14 +9,36 @@ const MAX = 108.5;
 const pct = (mhz) => ((mhz - MIN) / (MAX - MIN)) * 100;
 const SNAP = 0.7;
 
+/** The sound layer each station adds to the radio, keyed by stem id. */
+const STEM_NAMES = { pad: 'Organ', drums: 'Drums', shaker: 'Shaker', bass: 'Bass', keys: 'Piano' };
+
 /**
- * Hi-fi receiver dashboard used as the progress tracker:
- * glass tuning dial with station markers, an analog VU meter, a draggable
- * tuning knob, and five preset buttons with amber LEDs.
+ * Hi-fi receiver: the progress tracker AND the music player.
+ * Glass tuning dial with station markers, VU meter, a draggable tuning knob,
+ * a Play bar that plays every unlocked sound layer together, and five
+ * station presets with amber LEDs.
  */
 export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClue }) {
   const [mhz, setMhz] = useState(() => (lastTuned ? +FREQUENCIES[lastTuned].band : 98));
+  const { grooveOn } = useAudio();
   const level = useAudioLevel(true);
+
+  const unlockedStems = useMemo(
+    () => FREQUENCY_ORDER.filter((id) => discovered.includes(id)).map((id) => FREQUENCIES[id].stem),
+    [discovered],
+  );
+  const full = discovered.length === FREQUENCY_ORDER.length;
+
+  // Newly found frequencies join the music right away if it's playing.
+  useEffect(() => {
+    if (grooveOn) AudioController.setStems(unlockedStems);
+  }, [grooveOn, unlockedStems]);
+
+  const togglePlay = async () => {
+    await AudioController.unlock();
+    if (grooveOn) AudioController.stopGroove();
+    else if (unlockedStems.length) AudioController.startGroove(unlockedStems);
+  };
   const knob = useRef(null);
   const drag = useRef(null);
   const mhzRef = useRef(mhz);
@@ -169,10 +191,10 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
           </div>
           <div className="led-text mt-1 truncate text-sm opacity-90">
             {onStation
-              ? `▶ ${FREQUENCIES[onStation].title.toUpperCase()}`
+              ? `● ${FREQUENCIES[onStation].title.toUpperCase()} · TAP TO OPEN`
               : nearest
                 ? '··· STATIC · FIND IT IN THE PAINTING'
-                : 'SCANNING ···'}
+                : 'TURN THE KNOB TO TUNE ···'}
           </div>
         </button>
 
@@ -198,6 +220,32 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
         </div>
       </div>
 
+      {/* Play the unlocked mix */}
+      <button
+        type="button"
+        onClick={togglePlay}
+        disabled={!discovered.length}
+        className={`mt-3 flex w-full items-center gap-3 rounded-xl bg-mustard px-4 py-3 text-left text-umber shadow-[0_4px_0_#8a5c0c] transition active:translate-y-0.5 active:shadow-[0_2px_0_#8a5c0c] disabled:bg-[#4a3226] disabled:text-parchment/50 disabled:shadow-none ${
+          full && !grooveOn ? 'animate-led-pulse' : ''
+        }`}
+      >
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-umber text-mustard">
+          {grooveOn ? <Pause size={20} /> : <Play size={20} className="translate-x-0.5" />}
+        </span>
+        <span className="min-w-0 leading-tight">
+          <span className="font-display block text-lg font-black">
+            {!discovered.length ? 'No music yet' : grooveOn ? 'Pause the music' : 'Play your radio'}
+          </span>
+          <span className="block text-xs opacity-80">
+            {!discovered.length
+              ? 'Find a frequency in the painting to unlock your first sound'
+              : full
+                ? 'Full band: all 5 sounds in sync'
+                : `${discovered.length} of 5 sounds unlocked. Each new find adds one`}
+          </span>
+        </span>
+      </button>
+
       {/* Presets */}
       <div className="mt-3 grid grid-cols-5 gap-1.5">
         {FREQUENCY_ORDER.map((id, i) => {
@@ -216,6 +264,10 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
               <span className="text-[10px] font-bold tracking-wider text-parchment/70 uppercase">{i + 1}</span>
               <span className={`flex items-center gap-0.5 text-[10px] leading-tight ${on ? 'text-parchment' : 'text-parchment/40'}`}>
                 {on ? f.title.replace(/^The /, '') : <><Lock size={9} /> Locked</>}
+              </span>
+              <span className={`text-[9px] tracking-wider uppercase ${on ? 'text-mustard' : 'text-parchment/30'}`}>
+                {on && grooveOn ? '♪ ' : ''}
+                {STEM_NAMES[f.stem]}
               </span>
             </button>
           );

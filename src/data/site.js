@@ -45,4 +45,5 @@ export const STORAGE_KEYS = {
   discovered: 'livingroom:discovered:v1',
   guestbook: 'livingroom:guestbook:v1',
   ambient: 'livingroom:ambient:v1',
+  onboarded: 'livingroom:onboarded:v1',
 };

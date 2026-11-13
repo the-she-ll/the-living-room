@@ -2,7 +2,7 @@
 
 *An interactive exhibition companion by **The (She.LL)***
 
-This is a mobile-first web app that goes with a large painting of a 1970s Black living room. Visitors "tune into" five hidden memory frequencies and find them in any order using **NFC tags**, the **AR Lens** (MindAR image tracking) or the **illustrated Explore Map**. Each frequency unlocks a story, a sound layer in the soul groove, and a stanza of the exhibition poem.
+This is a mobile-first web app that goes with a large painting of a 1970s Black living room. Visitors "tune into" five hidden memory frequencies and find them in any order using **NFC tags**, the **AR Lens** (MindAR image tracking) or the **illustrated Explore Map**. Each frequency opens a story and adds a sound layer to the radio at the top of the app. First-time visitors get a short click-through walkthrough (replay it with the **?** button).
 
 Built with Vite, React 18, Tailwind CSS v4, Lucide React, MindAR.js and Three.js. All audio is synthesized live with the Web Audio API, so the app needs no audio files.
 
@@ -48,7 +48,6 @@ Write one URL to each NFC sticker (any NFC writer app works, e.g. NFC Tools):
 | **Magazine covers** (Jet, Ebony, Essence, Black Enterprise, Black World) | `MAGAZINES` + scans in `public/images/covers/` (see the README there). Used by both the web flip viewer and the AR lens. |
 | Rights notice | `RIGHTS` in `src/data/site.js`: short line (opening screen, footer, magazine viewers) and the full **Credits & rights** text. Set `contactEmail` to add a takedown/credit contact. |
 | Meeting notes, liner notes, voicemails | `FRONT_ROOM_NOTES`, `MAGAZINES` (`image`), `LINER_NOTES`, `VOICEMAILS` (`audioSrc`) |
-| **The poem** | `src/data/poem.js`. Replace each stanza's `lines` and set `ready: true` |
 | AR targets | `public/ar/targets.mind` (see `public/ar/README.md`) |
 | Colors and fonts | `src/index.css` → `@theme` |
 
@@ -65,19 +64,18 @@ src/
   components/
     SplashScreen.jsx           Logo loader + "Tap to Tune In" (unlocks audio on iOS)
     Header.jsx                 AR Lens toggle, vinyl crackle on/off
-    FrequencyDial.jsx          Hi-fi receiver progress tracker (dial, VU, knob, presets)
+    FrequencyDial.jsx          Hi-fi receiver: progress tracker + music player (dial, VU, knob, Play bar, presets)
     TuningOverlay.jsx          "Tuning In…" unlock animation
     ArtifactModal.jsx          Drawer: riddle, Explore / Archive / Reflect tabs
     ArtifactIllustration.jsx   Film-grain stand-ins for archival photos
     interactives/              PantheonGallery, FrontRoomNotes, MagazineFlip,
                                VinylPlayer, RotaryDial
     CanvasMap.jsx              Illustrated living-room map with riddle hotspots
-    PoemViewer.jsx             "Assemble the Sanctuary": blurred → glowing stanzas
-    SymphonyPlayer.jsx         Stem mixer + "All Frequencies Synchronized"
+    Walkthrough.jsx            First-time click-through guide (also behind the "?" button)
     Guestbook.jsx              Living Guestbook drawer + tape-reel marquee
     ARView.jsx                 Full-screen camera UI with graceful fallbacks
     Drawer.jsx                 Swipe-to-dismiss bottom sheet
-  data/                        site.js, frequencies.js, poem.js
+  data/                        site.js, frequencies.js
   hooks/                       useLocalStorage, useDiscoveries, useAudio
 ```
 
@@ -93,7 +91,7 @@ Each frequency adds one layer to a two-bar soul vamp at 94 BPM (Dm9 to G13):
 | Phone | Electric piano (with tremolo) |
 | Portraits | Warm organ pad |
 
-At 5/5 the **All Frequencies Synchronized** button (and the completed poem) brings in the full band.
+The radio's **Play** bar plays every unlocked layer together, and a newly found frequency joins the music while it plays. At 5/5 the readout shows the full band.
 
 ## Notes for exhibition day
 
@@ -110,4 +108,3 @@ Draft content to replace before opening:
 - **Pantheon:** the four figures are placeholders until the final list is chosen. The quotes are well-documented public statements, and no speech audio is included yet.
 - **Magazine covers:** these are stylized recreations, not reproductions of real Jet/Essence covers. Swap in licensed scans.
 - **Meeting notes and voicemails:** these are illustrative composites, marked as such in the UI. Replace them with documented gatherings and oral histories recorded (with consent) for the exhibition.
-- **Poem:** the stanzas are placeholders. The unlock and reveal already work.

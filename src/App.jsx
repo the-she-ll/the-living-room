@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookHeart, Nfc, RotateCcw, Sparkles } from 'lucide-react';
+import { FREQUENCIES, FREQUENCY_ORDER } from './data/frequencies';
 import SplashScreen from './components/SplashScreen';
 import Header from './components/Header';
 import FrequencyDial from './components/FrequencyDial';
 import CanvasMap from './components/CanvasMap';
 import ArtifactModal from './components/ArtifactModal';
-import PoemViewer from './components/PoemViewer';
-import SymphonyPlayer from './components/SymphonyPlayer';
 import Guestbook, { TapeReelMarquee, useGuestbook } from './components/Guestbook';
 import TuningOverlay from './components/TuningOverlay';
 import ARView from './components/ARView';
 import CreditsDrawer from './components/CreditsDrawer';
+import Walkthrough from './components/Walkthrough';
 import AudioController from './audio/AudioController';
 import { useAudio } from './hooks/useAudio';
 import { useDiscoveries, resolveFrequencyParam } from './hooks/useDiscoveries';
@@ -34,14 +34,15 @@ const DEEP_LINK = takeDeepLink();
 export default function App() {
   const pending = DEEP_LINK;
   const [entered, setEntered] = useState(false);
-  const { discovered, discover, complete, reset } = useDiscoveries();
+  const { discovered, discover, reset } = useDiscoveries();
   const [lastTuned, setLastTuned] = useState(null);
   const [tuning, setTuning] = useState(null); // { id, isNew }
   const [openId, setOpenId] = useState(null);
-  const [poemOpen, setPoemOpen] = useState(false);
   const [guestbookOpen, setGuestbookOpen] = useState(false);
   const [arOpen, setArOpen] = useState(false);
   const [creditsOpen, setCreditsOpen] = useState(false);
+  const [onboarded, setOnboarded] = useLocalStorage(STORAGE_KEYS.onboarded, false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [entries, setEntries] = useGuestbook();
   const [ambientPref, setAmbientPref] = useLocalStorage(STORAGE_KEYS.ambient, true);
   const { ambientOn } = useAudio();
@@ -107,6 +108,29 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onHide);
   }, []);
 
+  // First visit: show the walkthrough once the app is at rest. A visitor who
+  // arrived by tapping a tag sees their story first, then the guide.
+  useEffect(() => {
+    if (entered && !onboarded && !tuning && !openId && !arOpen) {
+      const t = setTimeout(() => setGuideOpen(true), 400);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [entered, onboarded, tuning, openId, arOpen]);
+
+  const closeGuide = () => {
+    setGuideOpen(false);
+    setOnboarded(true);
+  };
+
+  // "Sound unlocked" in a story drawer: close it and play the radio's mix.
+  const playRadio = async () => {
+    setOpenId(null);
+    await AudioController.unlock();
+    AudioController.startGroove(FREQUENCY_ORDER.filter((id) => discovered.includes(id)).map((id) => FREQUENCIES[id].stem));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const resetProgress = () => {
     if (window.confirm('Reset your discovered frequencies on this device?')) {
       AudioController.stopGroove();
@@ -127,6 +151,7 @@ export default function App() {
         }}
         ambientOn={ambientOn}
         onToggleAmbient={toggleAmbient}
+        onHelp={() => setGuideOpen(true)}
       />
 
       <main className="mx-auto max-w-3xl space-y-6 px-4 pt-5 pb-32">
@@ -135,24 +160,11 @@ export default function App() {
           <p className="text-[11px] tracking-[0.3em] text-mustard uppercase">An interactive companion to the painting</p>
           <h1 className="font-display mt-1 text-4xl leading-none font-black text-parchment sm:text-5xl">Tune into Sunday Afternoon</h1>
           <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-parchment/80">
-            Five memory frequencies are hidden inside this living room. Find them in any order. Each one unlocks a story, a sound, and a stanza of the sanctuary.
+            Five memory frequencies are hidden in this living room. Find them in any order. Each one opens a story and adds a new sound to your radio.
           </p>
         </section>
 
         <FrequencyDial discovered={discovered} lastTuned={lastTuned} onOpen={setOpenId} onShowClue={setOpenId} />
-
-        {complete && (
-          <button
-            type="button"
-            onClick={() => setPoemOpen(true)}
-            className="w-full animate-rise rounded-2xl bg-[linear-gradient(120deg,#8a3319,#d49b24_45%,#1a535c)] p-5 text-left shadow-[0_0_40px_rgba(212,155,36,0.4)]"
-          >
-            <p className="flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-parchment uppercase">
-              <Sparkles size={14} /> 5/5 · All frequencies synchronized
-            </p>
-            <p className="font-display mt-1 text-2xl font-black text-parchment">The Sanctuary is assembled. Hear the full groove →</p>
-          </button>
-        )}
 
         {/* ways to play */}
         <section className="grid grid-cols-3 gap-2 text-center text-[12px] leading-tight text-parchment/85">
@@ -174,16 +186,6 @@ export default function App() {
           <h2 className="font-display mb-2 text-2xl font-black text-parchment">Explore the Room</h2>
           <CanvasMap discovered={discovered} onTuneIn={tuneIn} onOpen={setOpenId} />
         </div>
-
-        <section className="space-y-3">
-          <div className="flex items-end justify-between">
-            <h2 className="font-display text-2xl font-black text-parchment">Assemble the Sanctuary</h2>
-            <button type="button" onClick={() => setPoemOpen(true)} className="text-sm font-bold text-mustard">
-              Read the poem →
-            </button>
-          </div>
-          <SymphonyPlayer discovered={discovered} complete={complete} />
-        </section>
 
         <footer className="pt-4 text-center text-xs text-parchment/50">
           <p>
@@ -216,12 +218,8 @@ export default function App() {
           setOpenId(null);
           setGuestbookOpen(true);
         }}
-        onOpenPoem={() => {
-          setOpenId(null);
-          setPoemOpen(true);
-        }}
+        onPlayRadio={playRadio}
       />
-      <PoemViewer open={poemOpen} onClose={() => setPoemOpen(false)} discovered={discovered} complete={complete} />
       <CreditsDrawer open={creditsOpen} onClose={() => setCreditsOpen(false)} />
       <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} entries={entries} setEntries={setEntries} />
 
@@ -236,6 +234,8 @@ export default function App() {
           onFallback={arFallback}
         />
       )}
+
+      <Walkthrough open={guideOpen} onClose={closeGuide} />
 
       {tuning && <TuningOverlay frequencyId={tuning.id} isNew={tuning.isNew} onDone={finishTuning} />}
     </div>

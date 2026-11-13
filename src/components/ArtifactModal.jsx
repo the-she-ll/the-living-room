@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Feather, Lock, MessageCircleHeart, Play, Sparkles, Square } from 'lucide-react';
+import { BookOpen, Feather, Lock, MessageCircleHeart, Play, Radio, Sparkles, Square } from 'lucide-react';
 import Drawer from './Drawer';
 import { FREQUENCIES } from '../data/frequencies';
-import { POEM } from '../data/poem';
 import AudioController from '../audio/AudioController';
 import { useAudio } from '../hooks/useAudio';
 import ArtifactIllustration from './ArtifactIllustration';
@@ -30,7 +29,7 @@ const TABS = [
  * Slide-up drawer for one artifact. Locked artifacts only reveal their riddle
  * so the hunt still has to happen in front of the painting.
  */
-export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onOpenGuestbook, onOpenPoem }) {
+export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onOpenGuestbook, onPlayRadio }) {
   // Keep the last artifact rendered while the drawer animates closed.
   const [shownId, setShownId] = useState(frequencyId);
   useEffect(() => {
@@ -49,7 +48,6 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
   const discovered = discoveredIds.includes(f.id);
 
   const Interactive = INTERACTIVES[f.interactive];
-  const stanza = POEM.stanzas[f.id];
 
   return (
     <Drawer
@@ -112,12 +110,17 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
 
               <button
                 type="button"
-                onClick={onOpenPoem}
-                className="w-full rounded-xl bg-umber p-4 text-left text-parchment shadow-lg"
+                onClick={onPlayRadio}
+                className="flex w-full items-center gap-3 rounded-xl bg-umber p-4 text-left text-parchment shadow-lg"
               >
-                <p className="text-[11px] tracking-[0.2em] text-mustard uppercase">Stanza unlocked</p>
-                <p className="font-display mt-1 text-lg leading-snug italic">“{stanza?.lines[0]} {stanza?.lines[1]}…”</p>
-                <p className="mt-2 text-xs text-parchment/60">Open “Assemble the Sanctuary” →</p>
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">
+                  <Radio size={20} />
+                </span>
+                <span>
+                  <span className="block text-[11px] tracking-[0.2em] text-mustard uppercase">Sound unlocked</span>
+                  <span className="font-display block text-lg leading-snug font-bold">{f.stemLabel} joined your radio</span>
+                  <span className="block text-xs text-parchment/60">Tap to hear it with everything you’ve found →</span>
+                </span>
               </button>
             </div>
           )}

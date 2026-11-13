@@ -43,6 +43,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
   const { clipPlaying } = useAudio();
   const [panInfo, setPanInfo] = useState(true); // portrait panel expanded?
+  const [panCredits, setPanCredits] = useState(false); // photo credit revealed?
   const swipeX = useRef(null);
   const onFoundRef = useRef(onFound);
   onFoundRef.current = onFound;
@@ -75,6 +76,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
           if (portraits) {
             portraits.onChange = (st) => {
               AudioController.stopClip();
+              setPanCredits(false);
               setPan(st);
             };
             setPan(portraits.state());
@@ -181,13 +183,13 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
               {panInfo && (
                 <>
               <p className="font-display mt-2 text-center text-[15px] leading-snug italic">“{person.quote}”</p>
-              <div className="mt-1 flex items-center justify-center gap-2">
-                <span className="text-[10px] text-parchment/55">— {person.source}</span>
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+                <span className="text-center text-[10px] text-parchment/55">— {person.source}</span>
                 {person.audioSrc ? (
                   <button
                     type="button"
                     onClick={() => (clipPlaying === clipId ? AudioController.stopClip() : AudioController.playClip(clipId, person.audioSrc, 20))}
-                    className="flex items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold text-umber"
+                    className="flex shrink-0 items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-umber"
                   >
                     {clipPlaying === clipId ? <Pause size={12} /> : <Volume2 size={12} />} {clipPlaying === clipId ? 'Playing…' : 'Hear their voice'}
                   </button>
@@ -196,26 +198,40 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
                     href={person.listenUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold text-umber"
+                    className="flex shrink-0 items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-umber"
                   >
                     <Volume2 size={12} /> Hear their voice <ExternalLink size={10} />
                   </a>
                 )}
               </div>
               <p className="mt-2 text-[12px] leading-snug text-parchment/85">{person.bio}</p>
-              <p className="mt-1.5 text-center text-[9px] leading-snug text-parchment/50">
-                {person.imageCredit && (
-                  <>
-                    Photo: {person.imageCredit}{' '}
-                    {person.imageLicense && (
-                      <a href={person.imageLicense.url} target="_blank" rel="noreferrer" className="underline">
-                        {person.imageLicense.label}
-                      </a>
-                    )}{' '}
-                  </>
-                )}
-                {RIGHTS.short}
-              </p>
+              {panCredits ? (
+                <p className="mt-1.5 text-center text-[9px] leading-snug text-parchment/55">
+                  {person.imageCredit && (
+                    <>
+                      Photo: {person.imageCredit}{' '}
+                      {person.imageLicense && (
+                        <a href={person.imageLicense.url} target="_blank" rel="noreferrer" className="underline">
+                          {person.imageLicense.label}
+                        </a>
+                      )}{' '}
+                    </>
+                  )}
+                  {RIGHTS.short}{' '}
+                  <button type="button" onClick={() => setPanCredits(false)} className="font-bold text-mustard">
+                    Hide
+                  </button>
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPanCredits(true)}
+                  aria-expanded={false}
+                  className="mx-auto mt-1.5 block text-[10px] font-bold text-parchment/55 underline underline-offset-2"
+                >
+                  Photo credits
+                </button>
+              )}
                 </>
               )}
             </div>

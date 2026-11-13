@@ -91,9 +91,22 @@ Each frequency adds its layer(s) to a two-bar soul vamp at 94 BPM (Dm9 to G13):
 
 The radio's **Play** bar plays every unlocked layer together, and a newly found frequency joins the music while it plays. At 4/4 the readout shows the full band.
 
+## Shared guestbook (Supabase)
+
+Until it's connected, each phone keeps its own memories. To share them:
+
+1. Create a free project at supabase.com.
+2. **SQL Editor → New query:** paste all of `supabase/setup.sql`, replace `REPLACE_WITH_YOUR_EMAIL` at the bottom with your admin email, and click **Run**.
+3. **Authentication → URL Configuration:** set **Site URL** to `https://the-she-ll.github.io/the-living-room/` and add `https://the-she-ll.github.io/the-living-room/?admin` under **Redirect URLs**.
+4. **Project Settings → API:** copy the **Project URL** and the **anon / publishable** key into `GUESTBOOK` in `src/data/site.js` (never the service_role key), then commit and push.
+
+- **Word filter:** checked instantly in the app and enforced by the database. Add words with `insert into public.guestbook_blocklist (word) values ('newword');` (`match_prefix = true` also blocks words that start with it).
+- **Deleting:** open `https://the-she-ll.github.io/the-living-room/?admin`, sign in with the emailed link, and tap **Delete**. Add more admins with `insert into public.guestbook_admins (email) values ('them@example.com');`.
+- After your first sign-in you can turn off **Authentication → Sign In / Providers → Allow new users to sign up**.
+
 ## Notes for exhibition day
 
-- **Persistence:** discoveries, the guestbook and the crackle setting are stored in `localStorage` on each visitor's phone. The guestbook is **per device**. To show every visitor's memories on a shared reel, connect a backend such as Supabase or Firebase in `Guestbook.jsx`.
+- **Persistence:** discoveries and the crackle setting are stored on each visitor's phone. The guestbook is shared once Supabase is connected (above).
 - **iOS:** audio starts after the first tap (splash screen). If the phone's silent switch is on, Web Audio is muted on iPhone, so consider wall text that says "turn your ringer on 🔊".
 - **AR size:** the MindAR engine (~360 KB gzipped) is code-split and only downloads when someone opens the AR Lens. The main app is ~80 KB gzipped.
 - **Reset:** a "Reset progress" link in the footer is handy for docents and testing.

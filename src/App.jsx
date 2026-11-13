@@ -43,7 +43,7 @@ export default function App() {
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [onboarded, setOnboarded] = useLocalStorage(STORAGE_KEYS.onboarded, false);
   const [guideOpen, setGuideOpen] = useState(false);
-  const [entries, setEntries] = useGuestbook();
+  const book = useGuestbook();
   const [ambientPref, setAmbientPref] = useLocalStorage(STORAGE_KEYS.ambient, true);
   const { ambientOn } = useAudio();
   const mapRef = useRef(null);
@@ -206,7 +206,7 @@ export default function App() {
       {/* guestbook tape reel, docked */}
       <div className="safe-bottom fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-umber-deep via-umber-deep/90 to-transparent px-3 pt-6">
         <div className="mx-auto max-w-3xl">
-          <TapeReelMarquee entries={entries} onOpen={() => setGuestbookOpen(true)} />
+          <TapeReelMarquee entries={book.entries} onOpen={() => setGuestbookOpen(true)} />
         </div>
       </div>
 
@@ -221,7 +221,7 @@ export default function App() {
         onPlayRadio={playRadio}
       />
       <CreditsDrawer open={creditsOpen} onClose={() => setCreditsOpen(false)} />
-      <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} entries={entries} setEntries={setEntries} />
+      <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} book={book} />
 
       {arOpen && (
         <ARView

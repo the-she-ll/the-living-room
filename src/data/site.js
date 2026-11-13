@@ -27,6 +27,18 @@ export const SITE = {
 };
 
 /**
+ * Shared guestbook (Supabase). Paste your project's URL and its *anon /
+ * publishable* key here (Supabase → Project Settings → API). Both are meant
+ * to be public; never put the service_role key in this file.
+ * Leave them empty and the guestbook keeps memories on each phone only.
+ */
+export const GUESTBOOK = {
+  supabaseUrl: '',
+  supabaseAnonKey: '',
+  refreshSeconds: 20, // how often open phones check for new memories
+};
+
+/**
  * Rights & credits notice (shown subtly in the footer, magazine viewers, AR
  * lens, and in full in the "Credits & rights" drawer). Set `contactEmail` to
  * add a "request credit or removal" line.

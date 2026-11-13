@@ -239,16 +239,18 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
           {showMag && (
             <div className="mx-auto max-w-md rounded-2xl bg-umber-deep/85 p-3 backdrop-blur">
               <div className="flex items-center gap-2">
-                <button type="button" onClick={table.prev} disabled={mag.flipped === 0} aria-label="Previous page" className="grid h-11 w-11 place-items-center rounded-full bg-parchment/15 disabled:opacity-30">
+                <button type="button" onClick={table.prev} disabled={mag.step === 0} aria-label="Previous page" className="grid h-11 w-11 place-items-center rounded-full bg-parchment/15 disabled:opacity-30">
                   <ChevronLeft size={20} />
                 </button>
                 <div className="min-w-0 flex-1 text-center leading-tight">
                   <p className="led-text text-lg">
-                    {mag.flipped === 0 ? 'TAP NEXT TO OPEN' : mag.flipped >= mag.total ? 'END OF THE STACK' : `ISSUE ${mag.flipped} OF ${mag.total}`}
+                    {`${mag.reading.masthead} · ${mag.mag + 1} OF ${mag.total}`}
                   </p>
                   {mag.reading && (
                     <p className="truncate text-xs text-parchment/80">
-                      {mag.reading.masthead} · {mag.reading.date}
+                      {mag.reading.date}
+                      {' · '}
+                      {mag.open ? (mag.step === mag.lastStep ? 'end of the stack' : 'next: another magazine') : 'tap next to open'}
                     </p>
                   )}
                   {mag.reading?.sourceUrl && (
@@ -257,7 +259,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
                     </a>
                   )}
                 </div>
-                <button type="button" onClick={table.next} disabled={mag.flipped >= mag.total} aria-label="Next page" className="grid h-11 w-11 place-items-center rounded-full bg-mustard text-umber disabled:opacity-30">
+                <button type="button" onClick={table.next} disabled={mag.step === mag.lastStep} aria-label="Next page" className="grid h-11 w-11 place-items-center rounded-full bg-mustard text-umber disabled:opacity-30">
                   <ChevronRight size={20} />
                 </button>
               </div>

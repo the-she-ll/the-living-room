@@ -235,75 +235,81 @@ function comingSoonTexture(m) {
 }
 
 /** The back of each cover: that issue's story, plus its credit and the rights line. */
-/**
- * The back of each cover: an optional photo from the article (with caption),
- * then the issue's story summary, its credit and the rights line.
- */
+/** Page 2 (back of the cover): the issue's story summary, credit and rights line. */
 function storyTexture(m, rightsLine) {
   const { c, ctx } = paperCanvas();
-  const tex = toTexture(c);
+  ctx.fillStyle = '#f7efdc';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#2b1a10';
+  ctx.font = '600 20px "DM Sans", sans-serif';
+  ctx.globalAlpha = 0.6;
+  ctx.fillText(`${m.masthead} · ${m.date}`.toUpperCase(), 40, 64);
+  ctx.globalAlpha = 1;
+  ctx.font = '900 40px Fraunces, Georgia, serif';
+  let y = 120;
+  wrap(ctx, m.coverLine, c.width - 80).slice(0, 3).forEach((l) => {
+    ctx.fillText(l, 40, y);
+    y += 46;
+  });
+  ctx.font = '400 25px "DM Sans", sans-serif';
+  y += 14;
+  wrap(ctx, m.story, c.width - 80).slice(0, 14).forEach((l) => {
+    ctx.fillText(l, 40, y);
+    y += 34;
+  });
+  ctx.font = '400 17px "DM Sans", sans-serif';
+  ctx.globalAlpha = 0.55;
+  const foot = wrap(ctx, `© ${m.credit}. ${rightsLine}`, c.width - 80).slice(0, 3);
+  foot.forEach((l, i) => ctx.fillText(l, 40, c.height - 40 - (foot.length - 1 - i) * 22));
+  return toTexture(c);
+}
 
+/** Page 3: one photo from the article, with a caption and photographer credit. */
+function photoPageTexture(m) {
+  const { c, ctx } = paperCanvas();
+  const tex = toTexture(c);
   const draw = (photo) => {
-    ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = '#f7efdc';
     ctx.fillRect(0, 0, c.width, c.height);
     ctx.fillStyle = '#2b1a10';
-    let y = 52;
-    ctx.font = '600 18px "DM Sans", sans-serif';
-    ctx.globalAlpha = 0.6;
-    ctx.fillText(`${m.masthead} · ${m.date}`.toUpperCase(), 36, y);
-    ctx.globalAlpha = 1;
-    y += 14;
-
-    if (photo) {
-      // fit the article photo into a band across the top of the page
-      const boxW = c.width - 72;
-      const boxH = 250;
-      const k = Math.min(boxW / photo.width, boxH / photo.height);
-      const w = photo.width * k;
-      const h = photo.height * k;
-      ctx.drawImage(photo, 36 + (boxW - w) / 2, y, w, h);
-      y += h + 22;
-      if (m.insideCaption) {
-        ctx.font = 'italic 400 17px "DM Sans", sans-serif';
-        ctx.globalAlpha = 0.75;
-        wrap(ctx, m.insideCaption, c.width - 72).slice(0, 2).forEach((l) => {
-          ctx.fillText(l, 36, y);
-          y += 21;
-        });
-        ctx.globalAlpha = 1;
-        y += 8;
-      }
-    } else {
-      y += 30;
+    if (!photo) {
+      ctx.strokeStyle = 'rgba(43,26,16,.3)';
+      ctx.setLineDash([10, 8]);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(40, 40, c.width - 80, c.height - 80);
+      ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.6;
+      ctx.font = '500 24px "DM Sans", sans-serif';
+      ctx.fillText('Photo from the issue', c.width / 2, c.height / 2 - 10);
+      ctx.fillText('coming soon', c.width / 2, c.height / 2 + 24);
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'left';
+      tex.needsUpdate = true;
+      return;
     }
-
-    const small = Boolean(photo);
-    ctx.font = `900 ${small ? 30 : 40}px Fraunces, Georgia, serif`;
-    y += small ? 18 : 24;
-    wrap(ctx, m.coverLine, c.width - 72).slice(0, 3).forEach((l) => {
-      ctx.fillText(l, 36, y);
-      y += small ? 35 : 46;
-    });
-    ctx.font = `400 ${small ? 19 : 25}px "DM Sans", sans-serif`;
-    y += 6;
-    const lineH = small ? 25 : 34;
-    const footTop = c.height - 92;
-    wrap(ctx, m.story, c.width - 72).forEach((l) => {
-      if (y > footTop - 4) return;
-      ctx.fillText(l, 36, y);
-      y += lineH;
-    });
-
-    ctx.font = '400 15px "DM Sans", sans-serif';
-    ctx.globalAlpha = 0.55;
-    const credits = [`© ${m.credit}.`, m.insideCredit ? `Photo: ${m.insideCredit}.` : '', rightsLine].filter(Boolean).join(' ');
-    const foot = wrap(ctx, credits, c.width - 72).slice(0, 4);
-    foot.forEach((l, i) => ctx.fillText(l, 36, c.height - 30 - (foot.length - 1 - i) * 19));
-    ctx.globalAlpha = 1;
+    const boxW = c.width - 64;
+    const boxH = c.height - 200;
+    const k = Math.min(boxW / photo.width, boxH / photo.height);
+    const w = photo.width * k;
+    const h = photo.height * k;
+    const top = 40 + (boxH - h) / 2;
+    ctx.drawImage(photo, 32 + (boxW - w) / 2, top, w, h);
+    let y = top + h + 34;
+    if (m.insideCaption) {
+      ctx.font = 'italic 400 21px "DM Sans", sans-serif';
+      wrap(ctx, m.insideCaption, c.width - 72).slice(0, 3).forEach((l) => {
+        ctx.fillText(l, 36, y);
+        y += 27;
+      });
+    }
+    if (m.insideCredit) {
+      ctx.font = '400 15px "DM Sans", sans-serif';
+      ctx.globalAlpha = 0.55;
+      ctx.fillText(`Photo: ${m.insideCredit}`, 36, y + 6);
+      ctx.globalAlpha = 1;
+    }
     tex.needsUpdate = true;
   };
-
   draw(null);
   if (m.insideImage) {
     const img = new Image();
@@ -314,9 +320,30 @@ function storyTexture(m, rightsLine) {
   return tex;
 }
 
+/**
+ * Coffee-table magazines, one issue at a time. Each issue reads like a real
+ * magazine: cover → open to the summary (left) and an article photo (right)
+ * → next issue. Steps run 0..2n-1: even = closed on the cover, odd = open.
+ */
 function buildTable(group, { magazines, rightsLine }, shared) {
   const loader = new THREE.TextureLoader();
   const n = magazines.length;
+
+  // Per-issue textures, built once and shared by every view of the table.
+  if (!shared.pages) {
+    shared.pages = magazines.map((m) => {
+      const slot = { cover: comingSoonTexture(m), story: storyTexture(m, rightsLine), photo: photoPageTexture(m) };
+      if (m.image) {
+        loader.load(m.image, (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          slot.cover = tex;
+        });
+      }
+      return slot;
+    });
+  }
+  const pages = shared.pages;
+
   // Sized relative to the coffee-table target (1 unit = target width) so the
   // open spread floats just over the table without leaving the screen.
   const SCALE = 0.95;
@@ -325,7 +352,6 @@ function buildTable(group, { magazines, rightsLine }, shared) {
   spread.position.set(-(PAGE_W * SCALE) / 2, 0.16, 0.18);
   group.add(spread);
 
-  // soft shadow so the pages read as an object above the table
   const shadow = new THREE.Mesh(
     new THREE.PlaneGeometry(PAGE_W * 2.3, PAGE_H * 1.15),
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.16 }),
@@ -335,75 +361,85 @@ function buildTable(group, { magazines, rightsLine }, shared) {
   group.add(shadow);
 
   const geo = new THREE.PlaneGeometry(PAGE_W, PAGE_H);
+  const mat = () => new THREE.MeshBasicMaterial({ transparent: true });
+  const coverMat = mat();
+  const storyMat = mat();
+  const photoMat = mat();
 
-  const leaves = magazines.map((m, i) => {
-    const pivot = new THREE.Group();
-    const coverMat = new THREE.MeshBasicMaterial({ map: comingSoonTexture(m) });
-    if (m.image) {
-      loader.load(
-        m.image,
-        (tex) => {
-          tex.colorSpace = THREE.SRGBColorSpace;
-          coverMat.map?.dispose();
-          coverMat.map = tex;
-          coverMat.needsUpdate = true;
-        },
-        undefined,
-        () => {}, // keep the "coming soon" page if the scan is missing
-      );
-    }
-    // Both faces occupy x 0…W from the spine (pivot origin): the cover faces
-    // the viewer, the story faces away, so turning the page shows the story on the left.
-    const front = new THREE.Mesh(geo, coverMat);
-    front.position.x = PAGE_W / 2;
-    const back = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: storyTexture(m, rightsLine) }));
-    back.rotation.y = Math.PI;
-    back.position.set(PAGE_W / 2, 0, -0.001);
-    pivot.add(front, back);
-    spread.add(pivot);
-    return { pivot, angle: 0 };
-  });
+  // page 3 lies flat on the right; the cover leaf turns over it on the spine
+  const photoPage = new THREE.Mesh(geo, photoMat);
+  photoPage.position.set(PAGE_W / 2, 0, 0);
+  const pivot = new THREE.Group();
+  pivot.position.z = 0.004;
+  const front = new THREE.Mesh(geo, coverMat);
+  front.position.x = PAGE_W / 2;
+  const back = new THREE.Mesh(geo, storyMat);
+  back.rotation.y = Math.PI;
+  back.position.set(PAGE_W / 2, 0, -0.001);
+  pivot.add(front, back);
+  spread.add(photoPage, pivot);
 
-  // Extra angled-view targets of the table share one flip-through state, so the
-  // page you're on survives the lens switching between them.
-  if (shared.api) return { update: makeUpdate(shared.api), api: shared.api };
-  const api = {
-    flipped: 0,
+  const api = shared.api || {
+    step: 0,
     total: n,
     onChange: null,
     go(d) {
-      const next = Math.max(0, Math.min(n, api.flipped + d));
-      if (next === api.flipped) return;
-      api.flipped = next;
+      const next = Math.max(0, Math.min(2 * n - 1, api.step + d));
+      if (next === api.step) return;
+      api.step = next;
       AudioController.playPageTurn();
       api.onChange?.(api.state());
     },
     next: () => api.go(1),
     prev: () => api.go(-1),
-    state: () => ({ flipped: api.flipped, total: n, reading: api.flipped ? magazines[api.flipped - 1] : null }),
+    state: () => {
+      const mag = Math.floor(api.step / 2);
+      return { step: api.step, lastStep: 2 * n - 1, mag, open: api.step % 2 === 1, total: n, reading: magazines[mag] };
+    },
+  };
+  shared.api = api;
+
+  let shownMag = Math.floor(api.step / 2);
+  let fade = 1; // opacity while switching issues
+  let switching = false;
+  let angle = 0;
+
+  const update = (t) => {
+    const mag = Math.floor(api.step / 2);
+    const open = api.step % 2 === 1;
+
+    // switching issues: fade out, swap pages (closed), fade back in
+    if (mag !== shownMag && !switching) switching = true;
+    if (switching) {
+      fade = Math.max(0, fade - 0.12);
+      if (fade === 0) {
+        shownMag = mag;
+        angle = open ? -Math.PI : 0;
+        switching = false;
+      }
+    } else {
+      fade = Math.min(1, fade + 0.1);
+    }
+
+    const p = pages[shownMag];
+    if (coverMat.map !== p.cover) { coverMat.map = p.cover; coverMat.needsUpdate = true; }
+    if (storyMat.map !== p.story) { storyMat.map = p.story; storyMat.needsUpdate = true; }
+    if (photoMat.map !== p.photo) { photoMat.map = p.photo; photoMat.needsUpdate = true; }
+    coverMat.opacity = storyMat.opacity = photoMat.opacity = fade;
+
+    const target = !switching && open ? -Math.PI : switching ? angle : 0;
+    angle += (target - angle) * 0.14;
+    pivot.rotation.y = angle;
+    pivot.position.z = 0.004 + Math.sin((Math.abs(angle) / Math.PI) * Math.PI) * 0.08;
+    // the photo page only shows once the cover has turned
+    photoPage.visible = angle < -0.2;
+
+    spread.position.y = 0.16 + Math.sin(t * 1.2) * 0.006 - (1 - fade) * 0.04;
+    const offset = open && !switching ? 0 : -PAGE_W / 2; // closed: centre the cover; open: centre the spine
+    spread.position.x += (offset * SCALE - spread.position.x) * 0.12;
   };
 
-  shared.api = api;
-  return { update: makeUpdate(api), api };
-
-  function makeUpdate(api) {
-    return (t) => {
-    spread.position.y = 0.16 + Math.sin(t * 1.2) * 0.006;
-    // closed: centre the cover; open: centre the spine; finished: centre the last story
-    const offset = api.flipped === 0 ? -PAGE_W / 2 : api.flipped >= n ? PAGE_W / 2 : 0;
-    spread.position.x += (offset * SCALE - spread.position.x) * 0.12;
-    leaves.forEach((leaf, i) => {
-      const target = i < api.flipped ? -Math.PI + i * 0.004 : 0;
-      leaf.angle += (target - leaf.angle) * 0.14;
-      leaf.pivot.rotation.y = leaf.angle;
-      // stack order: unturned covers top-down on the right, turned pages bottom-up on the left;
-      // lift each page mid-turn so it arcs over its neighbours
-      const p = Math.abs(leaf.angle) / Math.PI;
-      const base = i < api.flipped ? i * 0.004 : (n - i) * 0.004;
-      leaf.pivot.position.z = base + Math.sin(p * Math.PI) * 0.08;
-    });
-    };
-  }
+  return { update, api };
 }
 
 function buildGeneric(group, id) {

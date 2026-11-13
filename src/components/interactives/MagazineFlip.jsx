@@ -4,7 +4,7 @@ import { MAGAZINES } from '../../data/frequencies';
 import AudioController from '../../audio/AudioController';
 import { asset, RIGHTS } from '../../data/site';
 
-/** Real cover scan, or a plain "cover coming soon" page when none is set (or it fails to load). */
+/** Page 1: real cover scan, or a plain "cover coming soon" page when none is set (or it fails to load). */
 function Cover({ m }) {
   const [failed, setFailed] = useState(false);
   if (m.image && !failed) {
@@ -19,50 +19,66 @@ function Cover({ m }) {
   );
 }
 
-/** The back of each cover: that issue's story. */
+/** Page 2 (back of the cover): the issue's story summary. */
 function StoryPage({ m }) {
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden bg-[#f7efdc] p-3 text-left text-ink">
       <p className="text-[9px] tracking-widest uppercase opacity-60">
         {m.masthead} · {m.date}
       </p>
-      {m.insideImage && (
-        <>
-          <img src={asset(m.insideImage)} alt={m.insideCaption || ''} className="mt-1.5 max-h-[38%] w-full object-contain" />
-          {m.insideCaption && <p className="mt-1 text-[9px] leading-tight italic opacity-70">{m.insideCaption}</p>}
-        </>
-      )}
       <p className="font-display mt-1 text-[15px] leading-tight font-black">{m.coverLine}</p>
       <p className="mt-2 text-[11px] leading-snug opacity-85">{m.story}</p>
-      <p className="mt-auto pt-2 text-[8px] leading-tight opacity-50">
-        © {m.credit}
-        {m.insideCredit && <> · Photo: {m.insideCredit}</>}
-      </p>
+      <p className="mt-auto pt-2 text-[8px] leading-tight opacity-50">© {m.credit}</p>
+    </div>
+  );
+}
+
+/** Page 3: one photo from the article, with caption and credit. */
+function PhotoPage({ m }) {
+  return (
+    <div className="absolute inset-0 flex flex-col overflow-hidden bg-[#f7efdc] p-3 text-left text-ink">
+      {m.insideImage ? (
+        <>
+          <img src={asset(m.insideImage)} alt={m.insideCaption || `Photo from ${m.masthead}, ${m.date}`} className="min-h-0 w-full flex-1 object-contain" />
+          {m.insideCaption && <p className="mt-1.5 text-[10px] leading-tight italic opacity-80">{m.insideCaption}</p>}
+          {m.insideCredit && <p className="mt-0.5 text-[8px] opacity-55">Photo: {m.insideCredit}</p>}
+        </>
+      ) : (
+        <div className="grid flex-1 place-items-center rounded border border-dashed border-ink/30 text-center text-[10px] opacity-60">
+          Photo from the issue
+          <br />
+          coming soon
+        </div>
+      )}
     </div>
   );
 }
 
 /**
- * Coffee-table flip-through: each cover turns over like a page to show its
- * story, so the open spread reads story (left) · next cover (right).
+ * Coffee-table magazines, one issue at a time, read like the real thing:
+ * cover → open to the summary (left) and an article photo (right) → next
+ * issue. Steps run 0..2n-1: even = closed on the cover, odd = open.
  */
 export default function MagazineFlip({ accent }) {
-  const [flipped, setFlipped] = useState(0);
+  const [step, setStep] = useState(0);
   const total = MAGAZINES.length;
+  const last = total * 2 - 1;
+  const magIndex = Math.floor(step / 2);
+  const open = step % 2 === 1;
+  const m = MAGAZINES[magIndex];
 
   const go = (d) => {
-    const next = Math.max(0, Math.min(total, flipped + d));
-    if (next === flipped) return;
+    const next = Math.max(0, Math.min(last, step + d));
+    if (next === step) return;
     AudioController.playPageTurn();
-    setFlipped(next);
+    setStep(next);
   };
-
-  const reading = flipped > 0 ? MAGAZINES[flipped - 1] : null;
 
   return (
     <div>
       <div
-        className="relative ml-[50%] aspect-[2/3] w-[46%] max-w-[200px] [perspective:1400px]"
+        key={magIndex}
+        className={`relative aspect-[2/3] w-[46%] max-w-[200px] animate-fade transition-[margin] duration-500 [perspective:1400px] ${open ? 'ml-[50%]' : 'mx-auto'}`}
         onTouchStart={(e) => (e.currentTarget.dataset.x = e.touches[0].clientX)}
         onTouchEnd={(e) => {
           const dx = e.changedTouches[0].clientX - Number(e.currentTarget.dataset.x || 0);
@@ -70,54 +86,51 @@ export default function MagazineFlip({ accent }) {
         }}
       >
         <div className="absolute -inset-x-[110%] -bottom-6 h-10 rounded-[50%] bg-[#6b3f22]/35 blur-md" />
-        {MAGAZINES.map((m, i) => {
-          const isFlipped = i < flipped;
-          return (
-            <button
-              type="button"
-              key={i}
-              onClick={() => go(isFlipped ? -1 : 1)}
-              aria-label={isFlipped ? `Turn back to ${m.masthead} ${m.date}` : `Turn over ${m.masthead} ${m.date} to read its story`}
-              className="preserve-3d absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(.3,.7,.2,1)]"
-              style={{
-                transform: `rotateY(${isFlipped ? -178 + i * 0.6 : 0}deg) translateZ(${isFlipped ? i : total - i}px)`,
-                zIndex: isFlipped ? i : total - i,
-              }}
-            >
-              <div className="backface-hidden absolute inset-0 overflow-hidden rounded-[2px] shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
-                <Cover m={m} />
-              </div>
-              <div className="backface-hidden absolute inset-0 overflow-hidden rounded-[2px] shadow-inner [transform:rotateY(180deg)]">
-                <StoryPage m={m} />
-              </div>
-            </button>
-          );
-        })}
+        {/* page 3 sits underneath on the right */}
+        <div className={`absolute inset-0 overflow-hidden rounded-[2px] shadow-inner transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}>
+          <PhotoPage m={m} />
+        </div>
+        {/* the cover leaf: front = cover, back = summary */}
+        <button
+          type="button"
+          onClick={() => go(1)}
+          aria-label={open ? 'Next magazine' : `Open ${m.masthead}, ${m.date}`}
+          className="preserve-3d absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(.3,.7,.2,1)]"
+          style={{ transform: `rotateY(${open ? -178 : 0}deg)` }}
+        >
+          <div className="backface-hidden absolute inset-0 overflow-hidden rounded-[2px] shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+            <Cover m={m} />
+          </div>
+          <div className="backface-hidden absolute inset-0 overflow-hidden rounded-[2px] shadow-inner [transform:rotateY(180deg)]">
+            <StoryPage m={m} />
+          </div>
+        </button>
       </div>
 
       <div className="mt-8 flex items-center gap-2">
-        <button type="button" onClick={() => go(-1)} disabled={flipped === 0} aria-label="Previous page" className="grid h-10 w-10 place-items-center rounded-full bg-ink/10 disabled:opacity-30">
+        <button type="button" onClick={() => go(-1)} disabled={step === 0} aria-label="Previous page" className="grid h-10 w-10 place-items-center rounded-full bg-ink/10 disabled:opacity-30">
           <ChevronLeft size={18} />
         </button>
-        <p className="flex-1 text-center text-sm opacity-75">
-          {flipped === 0 ? 'Tap or swipe the cover to open it' : flipped >= total ? 'End of the stack' : `Issue ${flipped} of ${total}`}
+        <p className="flex-1 text-center text-sm leading-tight opacity-75">
+          <b>
+            {m.masthead} · {magIndex + 1} of {total}
+          </b>
+          <br />
+          <span className="text-xs">{open ? (step === last ? 'End of the stack' : 'Next: another magazine') : 'Tap or swipe the cover to open it'}</span>
         </p>
-        <button type="button" onClick={() => go(1)} disabled={flipped >= total} aria-label="Next page" className="grid h-10 w-10 place-items-center rounded-full text-parchment disabled:opacity-30" style={{ background: accent }}>
+        <button type="button" onClick={() => go(1)} disabled={step === last} aria-label="Next page" className="grid h-10 w-10 place-items-center rounded-full text-parchment disabled:opacity-30" style={{ background: accent }}>
           <ChevronRight size={18} />
         </button>
       </div>
 
       <p className="mt-3 text-[11px] leading-snug opacity-55">
-        {reading ? (
-          <>
-            {reading.masthead}, {reading.date} · © {reading.credit}.{' '}
-            {reading.sourceUrl && (
-              <a href={reading.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
-                Read the full issue <ExternalLink size={10} />
-              </a>
-            )}{' '}
-          </>
-        ) : null}
+        {m.masthead}, {m.date} · © {m.credit}.{' '}
+        {m.insideCredit && <>Photo: {m.insideCredit}. </>}
+        {m.sourceUrl && (
+          <a href={m.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
+            Read the full issue <ExternalLink size={10} />
+          </a>
+        )}{' '}
         {RIGHTS.short}
       </p>
     </div>

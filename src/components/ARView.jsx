@@ -32,7 +32,7 @@ const ERRORS = {
  * Full-screen MindAR camera view. Finding a target marks that frequency
  * discovered; any failure offers a seamless fallback to the map.
  */
-export default function ARView({ onClose, onFound, onOpen, onFallback }) {
+export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleMusic }) {
   const container = useRef(null);
   const session = useRef(null);
   const [status, setStatus] = useState('loading'); // loading | scanning | error
@@ -41,7 +41,8 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const [lastFound, setLastFound] = useState(null);
   const [mag, setMag] = useState(null); // coffee-table flip-through state
   const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
-  const { clipPlaying } = useAudio();
+  const [deck, setDeck] = useState(null); // turntable visuals state
+  const { clipPlaying, grooveOn } = useAudio();
   const [panInfo, setPanInfo] = useState(false); // portrait panel starts collapsed; visitors tap "Show info"
   const [panCredits, setPanCredits] = useState(false); // photo credit revealed?
   const swipeX = useRef(null);
@@ -71,6 +72,11 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
           if (table) {
             table.onChange = setMag;
             setMag(table.state());
+          }
+          const turntable = s.controls?.turntable;
+          if (turntable) {
+            turntable.onChange = setDeck;
+            setDeck(turntable.state());
           }
           const portraits = s.controls?.portraits;
           if (portraits) {
@@ -103,7 +109,9 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const showPan = status === 'scanning' && tracking === 'portraits' && portraits && pan;
   const person = pan?.person;
   const clipId = person ? `ar-${person.name}` : null;
-  const swiper = showMag ? table : showPan ? portraits : null;
+  const deckApi = session.current?.controls?.turntable;
+  const showDeck = status === 'scanning' && tracking === 'turntable' && deckApi && deck;
+  const swiper = showMag ? table : showPan ? portraits : showDeck ? deckApi : null;
   const e = error ? ERRORS[error] : null;
 
   return (
@@ -153,6 +161,31 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
 
       {status === 'scanning' && found && (
         <div className="safe-bottom absolute inset-x-0 bottom-0 z-10 space-y-2 px-4">
+          {showDeck && (
+            <div className="mx-auto max-w-md rounded-2xl bg-umber-deep/90 p-3 backdrop-blur">
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={deckApi.prev} aria-label="Previous visual" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-parchment/15">
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="min-w-0 flex-1 text-center leading-tight">
+                  <p className="led-text text-sm">
+                    {deck.index + 1} OF {deck.total} · THE RHYTHM & SANCTUARY
+                  </p>
+                  <p className="font-display text-xl font-black">{deck.name}</p>
+                  <button
+                    type="button"
+                    onClick={onToggleMusic}
+                    className="mt-1 inline-flex items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-umber"
+                  >
+                    {grooveOn ? <Pause size={12} /> : <Volume2 size={12} />} {grooveOn ? 'Pause the music' : 'Play the music'}
+                  </button>
+                </div>
+                <button type="button" onClick={deckApi.next} aria-label="Next visual" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
           {showPan && person && (
             <div className="mx-auto max-w-md rounded-2xl bg-umber-deep/90 p-3 backdrop-blur">
               <div className="flex items-start gap-2">
@@ -266,7 +299,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
               <p className="mt-2 text-center text-[10px] leading-snug text-parchment/55">{RIGHTS.short}</p>
             </div>
           )}
-          {!showPan && !showMag && (
+          {!showPan && !showMag && !showDeck && (
           <div className="parchment animate-rise mx-auto max-w-md rounded-2xl p-4 shadow-2xl" style={{ borderTop: `6px solid ${found.color}` }}>
             <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">{found.band} FM · Tuned in</p>
             <p className="font-display text-xl font-black">{found.title}</p>

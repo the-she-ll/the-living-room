@@ -9,7 +9,6 @@ import { FREQUENCIES, MAGAZINES, PANTHEON } from '../data/frequencies';
 import { asset, RIGHTS } from '../data/site';
 import AudioController from '../audio/AudioController';
 
-const PALETTE = ['#8A3319', '#D49B24', '#4F5D2F', '#1A535C', '#B4502C'];
 
 /* --------------------------- canvas textures --------------------------- */
 
@@ -159,40 +158,249 @@ function buildPortraits(group, { pantheon }, shared) {
   return { update, api };
 }
 
-function buildTurntable(group) {
-  const rings = PALETTE.map((col, i) => {
-    const m = new THREE.Mesh(
-      new THREE.TorusGeometry(0.22 + i * 0.09, 0.012 + i * 0.002, 12, 96),
-      new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9 }),
-    );
-    m.position.z = 0.05 + i * 0.03;
-    group.add(m);
-    return m;
-  });
+/* ------------- turntable: four live 2D visuals over the painted record player ------------- */
 
-  const bars = [];
-  const barGeo = new THREE.BoxGeometry(0.03, 0.03, 1);
-  for (let i = 0; i < 24; i++) {
-    const a = (i / 24) * Math.PI * 2;
-    const b = new THREE.Mesh(barGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(0.08 + (i / 24) * 0.45, 0.8, 0.55) }));
-    b.position.set(Math.cos(a) * 0.72, Math.sin(a) * 0.72, 0);
-    group.add(b);
-    bars.push(b);
+export const TURNTABLE_VISUALS = ['Sunday Spin', 'Mothership', 'Sound Waves', 'Equalizer'];
+
+// Where the painted turntable sits inside its AR target (target width = 1 unit).
+const DECK = { x: 0.06, y: 0.03, size: 0.78 };
+
+const AMBER = '#ffb347';
+const MUSTARD = '#d49b24';
+const PARCHMENT = '#f2e6cc';
+
+/** A vinyl record seen from above: grooves, a fixed light sheen, and a spinning label. */
+function drawRecord(ctx, cx, cy, r, rot, labelColor) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  // disc
+  ctx.fillStyle = '#121212';
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fill();
+  // grooves
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let g = r * 0.38; g < r * 0.97; g += r * 0.035) {
+    ctx.beginPath();
+    ctx.arc(0, 0, g, 0, Math.PI * 2);
+    ctx.stroke();
   }
+  // sheen stays still while the record turns, like light on real vinyl
+  const sheen = ctx.createConicGradient(-0.6, 0, 0);
+  sheen.addColorStop(0, 'rgba(255,255,255,0)');
+  sheen.addColorStop(0.06, 'rgba(255,230,190,0.16)');
+  sheen.addColorStop(0.12, 'rgba(255,255,255,0)');
+  sheen.addColorStop(0.5, 'rgba(255,255,255,0)');
+  sheen.addColorStop(0.56, 'rgba(255,230,190,0.1)');
+  sheen.addColorStop(0.62, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sheen;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fill();
+  // label (rotates)
+  ctx.rotate(rot);
+  ctx.fillStyle = labelColor;
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.33, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = PARCHMENT;
+  ctx.textAlign = 'center';
+  ctx.font = `900 ${Math.round(r * 0.085)}px Fraunces, Georgia, serif`;
+  ctx.fillText('SUNDAY', 0, -r * 0.1);
+  ctx.fillText('SESSIONS', 0, -r * 0.01);
+  ctx.font = `600 ${Math.round(r * 0.05)}px "DM Sans", sans-serif`;
+  ctx.fillText('THE LIVING ROOM · 33⅓', 0, r * 0.17);
+  // spindle
+  ctx.fillStyle = '#d9d9d9';
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.025, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
 
-  return (t) => {
-    rings.forEach((r, i) => {
-      r.rotation.z = t * (i % 2 ? -0.6 : 0.9) * (1 + i * 0.2);
-      r.rotation.x = Math.sin(t * 0.8 + i) * 0.5;
-      r.position.z = 0.08 + i * 0.04 + Math.sin(t * 3 + i) * 0.02;
+function drawTonearm(ctx, cx, cy, r, t) {
+  const px = cx + r * 1.05;
+  const py = cy - r * 0.95;
+  const a = 0.62 + Math.sin(t * 1.3) * 0.006; // tiny wobble riding the groove
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.fillStyle = '#9a9a9a';
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.09, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.rotate(a);
+  ctx.strokeStyle = '#d0d0d0';
+  ctx.lineWidth = r * 0.035;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, r * 1.25);
+  ctx.lineTo(-r * 0.12, r * 1.45);
+  ctx.stroke();
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillRect(-r * 0.2, r * 1.42, r * 0.14, r * 0.12);
+  ctx.restore();
+}
+
+const VISUALS = [
+  // 1. Sunday Spin: record, tonearm, notes drifting up
+  (ctx, S, t, level) => {
+    const r = S * 0.34;
+    drawRecord(ctx, S / 2, S / 2, r, t * 3.5, '#8a3319');
+    drawTonearm(ctx, S / 2, S / 2, r, t);
+    ctx.textAlign = 'center';
+    for (let k = 0; k < 7; k++) {
+      const phase = (t * 0.25 + k / 7) % 1;
+      const x = S / 2 + Math.sin(k * 2.1 + t) * S * 0.36;
+      const y = S * 0.92 - phase * S * 0.9;
+      ctx.globalAlpha = Math.sin(phase * Math.PI) * (0.6 + level * 0.4);
+      ctx.fillStyle = k % 2 ? AMBER : PARCHMENT;
+      ctx.font = `${Math.round(S * (0.06 + (k % 3) * 0.015))}px serif`;
+      ctx.fillText(k % 3 ? '♪' : '♫', x, y);
+    }
+    ctx.globalAlpha = 1;
+  },
+  // 2. Mothership: orbiting color rings, stars, a little saucer
+  (ctx, S, t, level) => {
+    const c = S / 2;
+    for (let k = 0; k < 60; k++) {
+      const x = (Math.sin(k * 91.7) * 0.5 + 0.5) * S;
+      const y = (Math.cos(k * 47.3) * 0.5 + 0.5) * S;
+      ctx.globalAlpha = 0.3 + 0.7 * Math.abs(Math.sin(t * 2 + k));
+      ctx.fillStyle = PARCHMENT;
+      ctx.fillRect(x, y, 2.5, 2.5);
+    }
+    ctx.globalAlpha = 1;
+    const colors = ['#8a3319', MUSTARD, '#4f5d2f', '#1a535c', '#b4502c'];
+    colors.forEach((col, k) => {
+      const rr = S * (0.3 + k * 0.035) + level * S * 0.02;
+      const start = t * (k % 2 ? -0.9 : 1.2) * (1 + k * 0.15);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = S * 0.018;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(c, c, rr, start, start + Math.PI * (0.9 + k * 0.12));
+      ctx.stroke();
     });
-    const level = AudioController.getLevel();
-    bars.forEach((b, i) => {
-      const h = 0.05 + (Math.sin(t * 6 + i * 0.9) * 0.5 + 0.5) * 0.25 + level * 0.4;
-      b.scale.z = h;
-      b.position.z = h / 2;
-    });
+    drawRecord(ctx, c, c, S * 0.24, t * 3.5, '#1a535c');
+    // saucer on an orbit
+    const a = t * 0.7;
+    const sx = c + Math.cos(a) * S * 0.42;
+    const sy = c + Math.sin(a) * S * 0.16 - S * 0.02;
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.fillStyle = 'rgba(255,179,71,0.35)';
+    ctx.beginPath();
+    ctx.moveTo(-S * 0.02, S * 0.01);
+    ctx.lineTo(S * 0.02, S * 0.01);
+    ctx.lineTo(S * 0.05, S * 0.09);
+    ctx.lineTo(-S * 0.05, S * 0.09);
+    ctx.fill();
+    ctx.fillStyle = '#c0c0c0';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, S * 0.06, S * 0.016, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = AMBER;
+    ctx.beginPath();
+    ctx.ellipse(0, -S * 0.012, S * 0.025, S * 0.016, 0, Math.PI, 0);
+    ctx.fill();
+    ctx.restore();
+  },
+  // 3. Sound Waves: ripples pulse outward with the beat
+  (ctx, S, t, level) => {
+    const c = S / 2;
+    for (let k = 0; k < 6; k++) {
+      const phase = (t * 0.45 + k / 6) % 1;
+      const rr = S * 0.26 + phase * S * 0.24;
+      ctx.strokeStyle = k % 2 ? AMBER : MUSTARD;
+      ctx.globalAlpha = (1 - phase) * (0.45 + level * 0.55);
+      ctx.lineWidth = S * (0.006 + level * 0.012);
+      ctx.beginPath();
+      for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.05) {
+        const wob = Math.sin(a * 8 + t * 4 + k) * S * 0.008 * (1 + level * 3);
+        const x = c + Math.cos(a) * (rr + wob);
+        const y = c + Math.sin(a) * (rr + wob);
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    drawRecord(ctx, c, c, S * 0.25, t * 3.5, '#4f5d2f');
+  },
+  // 4. Equalizer: a ring of bars bouncing around the record
+  (ctx, S, t, level) => {
+    const c = S / 2;
+    const n = 48;
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2 - Math.PI / 2;
+      const band = Math.abs(Math.sin(k * 0.55 + t * 3.1) * Math.sin(k * 0.21 - t * 1.7));
+      const h = S * (0.03 + band * 0.1 + level * 0.12);
+      const r0 = S * 0.3;
+      ctx.strokeStyle = `hsl(${30 + (k / n) * 25}, 90%, ${55 + band * 15}%)`;
+      ctx.lineWidth = S * 0.018;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0);
+      ctx.lineTo(c + Math.cos(a) * (r0 + h), c + Math.sin(a) * (r0 + h));
+      ctx.stroke();
+    }
+    drawRecord(ctx, c, c, S * 0.26, t * 3.5, MUSTARD);
+  },
+];
+
+function buildTurntable(group, _content, shared) {
+  const S = 768;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = S;
+  const ctx = canvas.getContext('2d');
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(DECK.size, DECK.size),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
+  );
+  plane.position.set(DECK.x, DECK.y, 0.1);
+  group.add(plane);
+
+  const api = shared.api || {
+    index: 0,
+    total: VISUALS.length,
+    onChange: null,
+    go(d) {
+      api.index = (api.index + d + api.total) % api.total;
+      AudioController.playClick();
+      api.onChange?.(api.state());
+    },
+    next: () => api.go(1),
+    prev: () => api.go(-1),
+    state: () => ({ index: api.index, total: api.total, name: TURNTABLE_VISUALS[api.index] }),
   };
+  shared.api = api;
+
+  let last = 0;
+  let shown = api.index;
+  let fade = 1;
+  let smooth = 0;
+  const update = (t) => {
+    if (t - last < 1 / 30) return; // ~30 fps is plenty and saves battery
+    last = t;
+    const lvl = AudioController.getLevel();
+    smooth = lvl > smooth ? lvl : smooth * 0.85 + lvl * 0.15;
+    // quick dip to transparent when switching visuals
+    if (shown !== api.index) {
+      fade = Math.max(0, fade - 0.25);
+      if (fade === 0) shown = api.index;
+    } else fade = Math.min(1, fade + 0.2);
+    ctx.clearRect(0, 0, S, S);
+    ctx.globalAlpha = 1;
+    VISUALS[shown](ctx, S, t, smooth);
+    plane.material.opacity = fade;
+    plane.position.z = 0.1 + Math.sin(t * 1.4) * 0.008;
+    tex.needsUpdate = true;
+  };
+  return { update, api };
 }
 
 /* ---------------- coffee table: real-cover flip-through ---------------- */

@@ -106,16 +106,33 @@ export default function App() {
   };
 
   /* ---------------- AR ---------------- */
+  // Every sound layer unlocked so far (optionally counting one just found).
+  const unlockedStems = useCallback(
+    (extra) => FREQUENCY_ORDER.filter((id) => id === extra || discovered.includes(id)).flatMap((id) => FREQUENCIES[id].stems),
+    [discovered],
+  );
+
   const onArFound = useCallback(
     (id) => {
       const isNew = discover(id);
       setLastTuned(id);
       if (isNew) AudioController.playTuneIn();
       else AudioController.playClick();
-      setTimeout(() => AudioController.playSoundbite(id), isNew ? 1300 : 100);
+      if (id === 'turntable') {
+        // the turntable's visuals dance to the radio, so start the music
+        setTimeout(() => AudioController.startGroove(unlockedStems(id)), isNew ? 1300 : 100);
+      } else {
+        setTimeout(() => AudioController.playSoundbite(id), isNew ? 1300 : 100);
+      }
     },
-    [discover],
+    [discover, unlockedStems],
   );
+
+  const toggleMusic = async () => {
+    await AudioController.unlock();
+    if (AudioController.state.grooveOn) AudioController.stopGroove();
+    else AudioController.startGroove(unlockedStems());
+  };
 
   const arFallback = () => {
     setArOpen(false);
@@ -253,6 +270,7 @@ export default function App() {
             setOpenId(id);
           }}
           onFallback={arFallback}
+          onToggleMusic={toggleMusic}
         />
       )}
 

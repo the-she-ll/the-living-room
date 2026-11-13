@@ -20,17 +20,33 @@ import { STORAGE_KEYS, SITE, RIGHTS } from './data/site';
 /** Read the NFC/QR deep link once, then strip it so a refresh doesn't replay it. */
 function takeDeepLink() {
   const id = resolveFrequencyParam();
-  if (window.location.search) {
+  if (window.location.search || window.location.hash) {
     const url = new URL(window.location.href);
-    ['frequency', 'unlock', 'f', 'guestbook'].forEach((k) => url.searchParams.delete(k));
-    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    [...url.searchParams.keys()]
+      .filter((k) => ['frequency', 'unlock', 'f', 'guestbook'].includes(k.toLowerCase()))
+      .forEach((k) => url.searchParams.delete(k));
+    const hash = url.hash.toLowerCase().replace(/[^a-z]/g, '') === 'guestbook' ? '' : url.hash;
+    window.history.replaceState(null, '', url.pathname + url.search + hash);
   }
   return id;
 }
 
-// ?guestbook (e.g. the tags behind the family photos) opens straight to the Living Guestbook.
-// Read before takeDeepLink() cleans the address bar.
-const GUESTBOOK_LINK = new URLSearchParams(window.location.search).has('guestbook');
+/**
+ * Links that open straight to the Living Guestbook (e.g. the tags behind the
+ * family photos). Forgiving on purpose, so a tag written slightly differently
+ * still works: ?guestbook, ?Guestbook=1, ?frequency=guestbook, #guestbook.
+ * Read before takeDeepLink() cleans the address bar.
+ */
+function wantsGuestbook() {
+  const { search, hash } = window.location;
+  const params = new URLSearchParams(search.toLowerCase());
+  return (
+    params.has('guestbook') ||
+    ['frequency', 'unlock', 'f'].some((k) => (params.get(k) || '').replace(/[^a-z]/g, '') === 'guestbook') ||
+    hash.toLowerCase().replace(/[^a-z]/g, '') === 'guestbook'
+  );
+}
+const GUESTBOOK_LINK = wantsGuestbook();
 
 // Read once at module load. (StrictMode would otherwise call an initializer twice, after the URL was already cleaned.)
 const DEEP_LINK = takeDeepLink();
@@ -146,7 +162,7 @@ export default function App() {
 
   return (
     <div className="wood-panel min-h-dvh">
-      {!entered && <SplashScreen pendingFrequency={pending} onEnter={enter} />}
+      {!entered && <SplashScreen pendingFrequency={pending} guestbook={GUESTBOOK_LINK} onEnter={enter} />}
 
       <Header
         arActive={arOpen}

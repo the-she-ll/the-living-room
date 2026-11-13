@@ -9,7 +9,7 @@ import { FREQUENCIES } from '../data/frequencies';
  * iOS/Android. If the visitor arrived from an NFC tag we tell them which
  * frequency is waiting.
  */
-export default function SplashScreen({ pendingFrequency, onEnter }) {
+export default function SplashScreen({ pendingFrequency, guestbook = false, onEnter }) {
   const [ready, setReady] = useState(false);
   const [logoOk, setLogoOk] = useState(true);
   const [leaving, setLeaving] = useState(false);
@@ -77,7 +77,7 @@ export default function SplashScreen({ pendingFrequency, onEnter }) {
               onClick={enter}
               className="flex items-center gap-2 rounded-full bg-mustard px-8 py-4 font-display text-lg font-black text-umber shadow-[0_8px_0_#8a5c0c,0_14px_30px_rgba(0,0,0,0.4)] transition active:translate-y-1 active:shadow-[0_4px_0_#8a5c0c]"
             >
-              <Radio size={22} /> {freq ? 'Tune In Now' : 'Tap to Tune In'}
+              <Radio size={22} /> {freq ? 'Tune In Now' : guestbook ? 'Open the Guestbook' : 'Tap to Tune In'}
             </button>
             <p className="text-xs text-parchment/60">Best with sound on 🔊</p>
           </div>

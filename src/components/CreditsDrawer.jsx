@@ -44,6 +44,40 @@ export default function CreditsDrawer({ open, onClose, zClass }) {
         )}
 
         <section>
+          <h3 className="font-display mb-1 text-lg font-black">Portrait photographs</h3>
+          <ul className="space-y-2 text-sm">
+            {PANTHEON.filter((p) => p.image && p.imageCredit).map((p) => (
+              <li key={p.name}>
+                {p.imageCredit}
+                {p.imageLicense && (
+                  <>
+                    {' '}
+                    <a href={p.imageLicense.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
+                      {p.imageLicense.label} <ExternalLink size={11} />
+                    </a>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h3 className="font-display mb-1 text-lg font-black">Voices</h3>
+          <p className="mb-1 text-sm opacity-75">“Hear their voice” opens these recordings on their archives’ own sites:</p>
+          <ul className="space-y-1 text-sm">
+            {PANTHEON.filter((p) => p.listenUrl).map((p) => (
+              <li key={p.name}>
+                {p.name}:{' '}
+                <a href={p.listenUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
+                  {p.listenLabel} <ExternalLink size={11} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
           <h3 className="font-display mb-1 text-lg font-black">Quotations</h3>
           <ul className="space-y-1 text-sm">
             {PANTHEON.map((p) => (

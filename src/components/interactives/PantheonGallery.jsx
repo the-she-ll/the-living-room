@@ -87,7 +87,16 @@ export default function PantheonGallery({ accent, clipPlaying }) {
       </div>
       {(p.imageCredit || (!p.audioSrc && p.listenLabel)) && (
         <p className="mt-2 text-[11px] leading-snug opacity-55">
-          {p.imageCredit && <>Photo: {p.imageCredit} </>}
+          {p.imageCredit && (
+            <>
+              Photo: {p.imageCredit}{' '}
+              {p.imageLicense && (
+                <a href={p.imageLicense.url} target="_blank" rel="noreferrer" className="underline">
+                  {p.imageLicense.label}
+                </a>
+              )}{' '}
+            </>
+          )}
           {!p.audioSrc && p.listenLabel && <>Audio: {p.listenLabel} (opens the archive’s site).</>}
         </p>
       )}

@@ -202,7 +202,16 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
                 </a>
               )}
               <p className="mt-1.5 text-center text-[9px] leading-snug text-parchment/50">
-                {showBio && person.imageCredit ? `Photo: ${person.imageCredit} ` : ''}
+                {showBio && person.imageCredit && (
+                  <>
+                    Photo: {person.imageCredit}{' '}
+                    {person.imageLicense && (
+                      <a href={person.imageLicense.url} target="_blank" rel="noreferrer" className="underline">
+                        {person.imageLicense.label}
+                      </a>
+                    )}{' '}
+                  </>
+                )}
                 {RIGHTS.short}
               </p>
             </div>

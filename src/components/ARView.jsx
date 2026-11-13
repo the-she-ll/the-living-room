@@ -42,6 +42,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const [mag, setMag] = useState(null); // coffee-table flip-through state
   const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
   const { clipPlaying } = useAudio();
+  const [panInfo, setPanInfo] = useState(true); // portrait panel expanded?
   const swipeX = useRef(null);
   const onFoundRef = useRef(onFound);
   onFoundRef.current = onFound;
@@ -157,16 +158,28 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
                   <ChevronLeft size={20} />
                 </button>
                 <div className="min-w-0 flex-1 text-center leading-tight">
-                  <p className="led-text text-sm">{pan.index + 1} OF {pan.total} · THE LIVING PANTHEON</p>
+                  {panInfo && <p className="led-text text-sm">{pan.index + 1} OF {pan.total} · THE LIVING PANTHEON</p>}
                   <p className="font-display text-xl font-black">{person.name}</p>
-                  <p className="text-[11px] text-parchment/70">
-                    {person.years} · {person.role}
-                  </p>
+                  {panInfo && (
+                    <p className="text-[11px] text-parchment/70">
+                      {person.years} · {person.role}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setPanInfo((v) => !v)}
+                    aria-expanded={panInfo}
+                    className="mt-0.5 text-[11px] font-bold text-mustard"
+                  >
+                    {panInfo ? 'Hide info ▾' : 'Show info ▴'}
+                  </button>
                 </div>
                 <button type="button" onClick={portraits.next} aria-label="Next trailblazer" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">
                   <ChevronRight size={20} />
                 </button>
               </div>
+              {panInfo && (
+                <>
               <p className="font-display mt-2 text-center text-[15px] leading-snug italic">“{person.quote}”</p>
               <div className="mt-1 flex items-center justify-center gap-2">
                 <span className="text-[10px] text-parchment/55">— {person.source}</span>
@@ -203,6 +216,8 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
                 )}
                 {RIGHTS.short}
               </p>
+                </>
+              )}
             </div>
           )}
           {showMag && (
@@ -219,6 +234,11 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
                     <p className="truncate text-xs text-parchment/80">
                       {mag.reading.masthead} · {mag.reading.date}
                     </p>
+                  )}
+                  {mag.reading?.sourceUrl && (
+                    <a href={mag.reading.sourceUrl} target="_blank" rel="noreferrer" className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-bold text-mustard">
+                      Read the full issue <ExternalLink size={10} />
+                    </a>
                   )}
                 </div>
                 <button type="button" onClick={table.next} disabled={mag.flipped >= mag.total} aria-label="Next page" className="grid h-11 w-11 place-items-center rounded-full bg-mustard text-umber disabled:opacity-30">

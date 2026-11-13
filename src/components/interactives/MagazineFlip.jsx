@@ -104,7 +104,7 @@ export default function MagazineFlip({ accent }) {
             {reading.masthead}, {reading.date} · © {reading.credit}.{' '}
             {reading.sourceUrl && (
               <a href={reading.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
-                Source <ExternalLink size={10} />
+                Read the full issue <ExternalLink size={10} />
               </a>
             )}{' '}
           </>

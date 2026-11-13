@@ -2,7 +2,7 @@
 
 *An interactive exhibition companion by **The (She.LL)***
 
-This is a mobile-first web app that goes with a large painting of a 1970s Black living room. Visitors "tune into" five hidden memory frequencies and find them in any order using **NFC tags**, the **AR Lens** (MindAR image tracking) or the **illustrated Explore Map**. Each frequency opens a story and adds a sound layer to the radio at the top of the app. First-time visitors get a short click-through walkthrough (replay it with the **?** button).
+This is a mobile-first web app that goes with a large painting of a 1970s Black living room. Visitors "tune into" four hidden memory frequencies and find them in any order using **NFC tags**, the **AR Lens** (MindAR image tracking) or the **illustrated Explore Map**. Each frequency opens a story and adds a sound layer to the radio at the top of the app. First-time visitors get a short click-through walkthrough (replay it with the **?** button).
 
 Built with Vite, React 18, Tailwind CSS v4, Lucide React, MindAR.js and Three.js. All audio is synthesized live with the Web Audio API, so the app needs no audio files.
 
@@ -31,7 +31,6 @@ Write one URL to each NFC sticker (any NFC writer app works, e.g. NFC Tools):
 | Artifact | URL |
 |---|---|
 | Wall portraits | `https://the-she-ll.github.io/the-living-room/?frequency=portraits` |
-| Velvet sofa / chair | `https://the-she-ll.github.io/the-living-room/?frequency=chair` |
 | Coffee table | `https://the-she-ll.github.io/the-living-room/?frequency=table` |
 | Turntable console | `https://the-she-ll.github.io/the-living-room/?frequency=turntable` |
 | Rotary phone | `https://the-she-ll.github.io/the-living-room/?frequency=phone` |
@@ -81,17 +80,16 @@ src/
 
 ## The audio stems
 
-Each frequency adds one layer to a two-bar soul vamp at 94 BPM (Dm9 to G13):
+Each frequency adds its layer(s) to a two-bar soul vamp at 94 BPM (Dm9 to G13):
 
 | Frequency | Stem |
 |---|---|
-| Turntable | Funk bassline |
-| Chair | Pocket drums |
+| Turntable | Funk bassline + pocket drums |
 | Table | Page-turn shaker |
 | Phone | Electric piano (with tremolo) |
 | Portraits | Warm organ pad |
 
-The radio's **Play** bar plays every unlocked layer together, and a newly found frequency joins the music while it plays. At 5/5 the readout shows the full band.
+The radio's **Play** bar plays every unlocked layer together, and a newly found frequency joins the music while it plays. At 4/4 the readout shows the full band.
 
 ## Notes for exhibition day
 

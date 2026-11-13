@@ -5,7 +5,7 @@ const STEPS = [
   {
     icon: Radio,
     eyebrow: 'Welcome',
-    title: 'Five memories are hidden in this painting',
+    title: 'Four memories are hidden in this painting',
     body: 'Each one is a radio frequency. Find them in any order to tune into a Sunday afternoon in a 1970s Black living room.',
   },
   {
@@ -18,7 +18,7 @@ const STEPS = [
     icon: Play,
     eyebrow: 'Step 2 · Listen',
     title: 'Your radio grows with every find',
-    body: 'Each frequency lights a station on the radio and unlocks a new sound: bass, drums, piano and more. Press Play to hear them together. Find all five for the full band.',
+    body: 'Each frequency lights a station on the radio and unlocks a new sound: bass and drums, piano, organ and more. Press Play to hear them together. Find all four for the full band.',
   },
   {
     icon: BookOpen,

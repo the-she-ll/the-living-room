@@ -6,14 +6,12 @@ import AudioController from '../audio/AudioController';
 import { useAudio } from '../hooks/useAudio';
 import ArtifactIllustration from './ArtifactIllustration';
 import PantheonGallery from './interactives/PantheonGallery';
-import FrontRoomNotes from './interactives/FrontRoomNotes';
 import MagazineFlip from './interactives/MagazineFlip';
 import VinylPlayer from './interactives/VinylPlayer';
 import RotaryDial from './interactives/RotaryDial';
 
 const INTERACTIVES = {
   pantheon: PantheonGallery,
-  frontroom: FrontRoomNotes,
   magazines: MagazineFlip,
   vinyl: VinylPlayer,
   rotary: RotaryDial,

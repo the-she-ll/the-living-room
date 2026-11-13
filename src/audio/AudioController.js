@@ -6,7 +6,7 @@
  *  - "Tuning in" radio sweep for unlocks
  *  - One signature soundbite per frequency
  *  - A 5-stem soul groove sequencer (bass, drums, shaker, keys, pad).
- *    Each discovered frequency adds its stem to the mix.
+ *    Each discovered frequency adds its stem(s) to the mix.
  *  - Optional playback of real recordings (`playClip`) with a synthesized
  *    "muffled voice" placeholder when no file has been supplied yet.
  *
@@ -340,17 +340,6 @@ class AudioControllerImpl {
         BASSLINE.slice(0, 7).forEach(([step, n, len]) =>
           this._bassNote(this.sfxBus, t + 0.3 + step * this._stepDur(), n, len * this._stepDur(), 1),
         );
-        break;
-      }
-      case 'chair': {
-        const sd = this._stepDur();
-        // a one-bar drum fill
-        [0, 4, 7, 10, 12, 14, 15].forEach((s) => {
-          if (s === 4 || s === 12) this._snare(this.sfxBus, t + s * sd, 1);
-          else if (s >= 14) this._snare(this.sfxBus, t + s * sd, 0.5);
-          else this._kick(this.sfxBus, t + s * sd, 1);
-          this._hat(this.sfxBus, t + s * sd, 0.4);
-        });
         break;
       }
       case 'portraits':

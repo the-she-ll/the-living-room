@@ -9,7 +9,7 @@ If it's missing, the app shows a friendly "lens is still being calibrated" scree
 
 ## The three AR zones
 
-Only three artifacts have AR. The armchair and the rotary phone are still part of the hunt through NFC tags and the Explore Map.
+Only three of the four artifacts have AR. The rotary phone is still part of the hunt through its NFC tag and the Explore Map.
 
 | Index | Artifact    | Zone on the canvas                                   | AR overlay                                      |
 |------:|-------------|------------------------------------------------------|-------------------------------------------------|

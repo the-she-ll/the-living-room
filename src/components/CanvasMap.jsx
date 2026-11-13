@@ -6,7 +6,6 @@ import AudioController from '../audio/AudioController';
 /** Hotspot positions in the 400×300 illustration (percent-based). */
 const HOTSPOTS = {
   portraits: { x: 33, y: 22 },
-  chair: { x: 30, y: 55 },
   table: { x: 47, y: 78 },
   turntable: { x: 80, y: 52 },
   phone: { x: 9, y: 58 },

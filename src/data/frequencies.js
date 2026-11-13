@@ -1,5 +1,5 @@
 /**
- * The five "memory frequencies" hidden in the painting.
+ * The four "memory frequencies" hidden in the painting.
  *
  * NFC tags / QR codes should point at:  https://<your-domain>/?frequency=<id>
  * (`?unlock=<id>` works too.)
@@ -8,7 +8,7 @@
  * artist's final research, licensed archival images and recorded audio.
  */
 
-export const FREQUENCY_ORDER = ['portraits', 'chair', 'table', 'turntable', 'phone'];
+export const FREQUENCY_ORDER = ['portraits', 'table', 'turntable', 'phone'];
 
 export const FREQUENCIES = {
   portraits: {
@@ -17,7 +17,7 @@ export const FREQUENCIES = {
     title: 'The Living Pantheon',
     subtitle: 'Notable Figures',
     color: '#9C6B12',
-    stem: 'pad',
+    stems: ['pad'],
     stemLabel: 'Warm Organ Pad',
     interactive: 'pantheon',
     interactiveLabel: 'Flip Through the Pantheon',
@@ -32,34 +32,13 @@ export const FREQUENCIES = {
     reflection: 'Whose face hung on the wall in your family home, and what did it teach you without saying a word?',
   },
 
-  chair: {
-    id: 'chair',
-    band: '93.5',
-    title: 'The Front Room Strategy',
-    subtitle: 'Domestic Gatherings',
-    color: '#4F5D2F',
-    stem: 'drums',
-    stemLabel: 'Pocket Drums',
-    interactive: 'frontroom',
-    interactiveLabel: 'Open the Meeting Notes',
-    clue:
-      'Find the seat that was too good to sit on and too important to leave empty. Plastic on velvet, gold shag underfoot: plans were made here before they were made public.',
-    archive: [
-      'The front room was often the best-kept room in the house, saved for company, holidays and serious business. Behind closed doors it also became a working space. Church committees, civic clubs, sororities and neighborhood associations met on living room sofas, and many local campaigns of the civil rights era were planned in private homes before they became public actions.',
-      'Hospitality was a strategy in itself. Hosts fed organizers, gave traveling activists a place to sleep, and offered a safe place to talk when public buildings were closed to them or under watch. Earlier traditions carried on too. Rent parties, which began in the 1920s, let neighbors pool money with music and food, and salon-style evenings let writers, artists and students argue over ideas.',
-      'Plastic slipcovers, polished tables and shag rugs said something too. They showed that a family took care of what it had worked hard to own. In a society that denied Black families housing, credit and respect, a well-kept front room was pride you could see, and a sanctuary where people could rest and plan.',
-    ],
-    photoCaption: 'Living room gathering (archival image placeholder)',
-    reflection: 'What conversations happened in your family’s front room that never made it outside?',
-  },
-
   table: {
     id: 'table',
     band: '97.9',
     title: 'The Coffee Table Pulpit',
     subtitle: 'Jet, Ebony, Essence & the Black Press',
     color: '#8A3319',
-    stem: 'shaker',
+    stems: ['shaker'],
     stemLabel: 'Page-Turn Shaker',
     interactive: 'magazines',
     interactiveLabel: 'Flip the Magazine Stack',
@@ -81,8 +60,8 @@ export const FREQUENCIES = {
     title: 'The Rhythm & Sanctuary',
     subtitle: 'Parliament-Funkadelic & Soul',
     color: '#1A535C',
-    stem: 'bass',
-    stemLabel: 'Funk Bassline',
+    stems: ['bass', 'drums'],
+    stemLabel: 'Funk Bass & Drums',
     interactive: 'vinyl',
     interactiveLabel: 'Drop the Needle',
     clue:
@@ -102,7 +81,7 @@ export const FREQUENCIES = {
     title: 'The Porch Lifeline',
     subtitle: 'Rotary Telephone',
     color: '#B4502C',
-    stem: 'keys',
+    stems: ['keys'],
     stemLabel: 'Electric Piano',
     interactive: 'rotary',
     interactiveLabel: 'Dial an Oral History',
@@ -164,34 +143,6 @@ export const PANTHEON = [
     source: 'Campaign slogan, 1968',
     bio: 'In 1968 she became the first Black woman elected to the U.S. Congress. In 1972 she became the first Black candidate to seek a major party’s presidential nomination.',
     audioSrc: '',
-  },
-];
-
-/** PLACEHOLDER meeting notes. Swap in documented gatherings & archival photos. */
-export const FRONT_ROOM_NOTES = [
-  {
-    kind: 'Strategy Meeting',
-    when: 'Weeknight, after supper',
-    note: 'Folding chairs brought in from the church basement. Coffee on the stove. Agenda: voter registration drive, who drives, who watches the kids.',
-    tag: 'Civil Rights',
-  },
-  {
-    kind: 'Rent Party',
-    when: 'Saturday, late',
-    note: 'A quarter at the door, fried fish in the kitchen, records stacked on the console. By morning, the rent is covered and nobody is ashamed.',
-    tag: 'Mutual Aid',
-  },
-  {
-    kind: 'Sunday Salon',
-    when: 'After service',
-    note: 'The college kids home for the weekend argue with the deacons about Black Power. Grandmother listens from the good chair and says the last word.',
-    tag: 'Ideas',
-  },
-  {
-    kind: 'Care Circle',
-    when: 'Whenever needed',
-    note: 'A list on the back of an envelope: who brings meals to Sister Ruth, who sits with her Thursdays, who calls the doctor. Nobody is forgotten.',
-    tag: 'Community Care',
   },
 ];
 

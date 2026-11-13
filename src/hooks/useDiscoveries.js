@@ -38,7 +38,6 @@ export function useDiscoveries() {
 /** Normalize ?frequency= / ?unlock= values (case, whitespace, common aliases). */
 const ALIASES = {
   portrait: 'portraits', wall: 'portraits', pantheon: 'portraits',
-  sofa: 'chair', couch: 'chair', throne: 'chair', frontroom: 'chair',
   coffeetable: 'table', magazines: 'table', jet: 'table', essence: 'table',
   record: 'turntable', vinyl: 'turntable', stereo: 'turntable', console: 'turntable',
   telephone: 'phone', rotary: 'phone',

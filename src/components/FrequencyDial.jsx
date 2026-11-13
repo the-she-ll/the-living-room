@@ -11,12 +11,13 @@ const SNAP = 0.7;
 
 /** The sound layer each station adds to the radio, keyed by stem id. */
 const STEM_NAMES = { pad: 'Organ', drums: 'Drums', shaker: 'Shaker', bass: 'Bass', keys: 'Piano' };
+const TOTAL = FREQUENCY_ORDER.length;
 
 /**
  * Hi-fi receiver: the progress tracker AND the music player.
  * Glass tuning dial with station markers, VU meter, a draggable tuning knob,
- * a Play bar that plays every unlocked sound layer together, and five
- * station presets with amber LEDs.
+ * a Play bar that plays every unlocked sound layer together, and one
+ * station preset (amber LED) per frequency.
  */
 export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClue }) {
   const [mhz, setMhz] = useState(() => (lastTuned ? +FREQUENCIES[lastTuned].band : 98));
@@ -24,7 +25,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
   const level = useAudioLevel(true);
 
   const unlockedStems = useMemo(
-    () => FREQUENCY_ORDER.filter((id) => discovered.includes(id)).map((id) => FREQUENCIES[id].stem),
+    () => FREQUENCY_ORDER.filter((id) => discovered.includes(id)).flatMap((id) => FREQUENCIES[id].stems),
     [discovered],
   );
   const full = discovered.length === FREQUENCY_ORDER.length;
@@ -187,7 +188,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
         >
           <div className="led-text flex items-baseline justify-between text-2xl leading-none">
             <span>{mhz.toFixed(1)} FM</span>
-            <span className="text-base">{count}/5</span>
+            <span className="text-base">{count}/{TOTAL}</span>
           </div>
           <div className="led-text mt-1 truncate text-sm opacity-90">
             {onStation
@@ -240,14 +241,14 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
             {!discovered.length
               ? 'Find a frequency in the painting to unlock your first sound'
               : full
-                ? 'Full band: all 5 sounds in sync'
-                : `${discovered.length} of 5 sounds unlocked. Each new find adds one`}
+                ? `Full band: all ${TOTAL} frequencies in sync`
+                : `${discovered.length} of ${TOTAL} frequencies found. Each new find adds a sound`}
           </span>
         </span>
       </button>
 
       {/* Presets */}
-      <div className="mt-3 grid grid-cols-5 gap-1.5">
+      <div className="mt-3 grid grid-cols-4 gap-1.5">
         {FREQUENCY_ORDER.map((id, i) => {
           const f = FREQUENCIES[id];
           const on = discovered.includes(id);
@@ -267,7 +268,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
               </span>
               <span className={`text-[9px] tracking-wider uppercase ${on ? 'text-mustard' : 'text-parchment/30'}`}>
                 {on && grooveOn ? '♪ ' : ''}
-                {STEM_NAMES[f.stem]}
+                {f.stems.map((st) => STEM_NAMES[st]).join(' + ')}
               </span>
             </button>
           );

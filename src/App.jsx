@@ -127,7 +127,7 @@ export default function App() {
   const playRadio = async () => {
     setOpenId(null);
     await AudioController.unlock();
-    AudioController.startGroove(FREQUENCY_ORDER.filter((id) => discovered.includes(id)).map((id) => FREQUENCIES[id].stem));
+    AudioController.startGroove(FREQUENCY_ORDER.filter((id) => discovered.includes(id)).flatMap((id) => FREQUENCIES[id].stems));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -160,7 +160,7 @@ export default function App() {
           <p className="text-[11px] tracking-[0.3em] text-mustard uppercase">An interactive companion to the painting</p>
           <h1 className="font-display mt-1 text-4xl leading-none font-black text-parchment sm:text-5xl">Tune into Sunday Afternoon</h1>
           <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-parchment/80">
-            Five memory frequencies are hidden in this living room. Find them in any order. Each one opens a story and adds a new sound to your radio.
+            Four memory frequencies are hidden in this living room. Find them in any order. Each one opens a story and adds a new sound to your radio.
           </p>
         </section>
 

@@ -32,18 +32,6 @@ const SCENES = {
       ))}
     </>
   ),
-  chair: (
-    <>
-      {WALL}
-      <rect y="150" width="320" height="50" fill="#c99a2e" />
-      <path d="M50 70 Q160 50 270 70 L270 150 L50 150Z" fill="#4f5d2f" />
-      <rect x="36" y="100" width="40" height="60" rx="16" fill="#3e4a24" />
-      <rect x="244" y="100" width="40" height="60" rx="16" fill="#3e4a24" />
-      <rect x="70" y="112" width="180" height="34" rx="10" fill="#6f7f45" />
-      <path d="M60 72 Q160 54 262 72" stroke="#fff" strokeOpacity=".35" strokeWidth="3" fill="none" />
-      <rect x="120" y="166" width="80" height="14" rx="3" fill="#5a3722" />
-    </>
-  ),
   table: (
     <>
       <rect width="320" height="200" fill="#c99a2e" />

@@ -42,7 +42,6 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const [mag, setMag] = useState(null); // coffee-table flip-through state
   const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
   const { clipPlaying } = useAudio();
-  const [showBio, setShowBio] = useState(false);
   const swipeX = useRef(null);
   const onFoundRef = useRef(onFound);
   onFoundRef.current = onFound;
@@ -75,7 +74,6 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
           if (portraits) {
             portraits.onChange = (st) => {
               AudioController.stopClip();
-              setShowBio(false);
               setPan(st);
             };
             setPan(portraits.state());
@@ -170,39 +168,30 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
                 </button>
               </div>
               <p className="font-display mt-2 text-center text-[15px] leading-snug italic">“{person.quote}”</p>
-              <p className="text-center text-[10px] text-parchment/55">— {person.source}</p>
-              {showBio ? (
-                <p className="mt-2 text-[12px] leading-snug text-parchment/85">
-                  {person.bio}{' '}
-                  <button type="button" onClick={() => setShowBio(false)} className="font-bold text-mustard">
-                    Less
+              <div className="mt-1 flex items-center justify-center gap-2">
+                <span className="text-[10px] text-parchment/55">— {person.source}</span>
+                {person.audioSrc ? (
+                  <button
+                    type="button"
+                    onClick={() => (clipPlaying === clipId ? AudioController.stopClip() : AudioController.playClip(clipId, person.audioSrc, 20))}
+                    className="flex items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold text-umber"
+                  >
+                    {clipPlaying === clipId ? <Pause size={12} /> : <Volume2 size={12} />} {clipPlaying === clipId ? 'Playing…' : 'Hear their voice'}
                   </button>
-                </p>
-              ) : (
-                <button type="button" onClick={() => setShowBio(true)} className="mx-auto mt-1 block text-[12px] font-bold text-mustard">
-                  About {person.name.split(' ')[0]} ▾
-                </button>
-              )}
-              {person.audioSrc ? (
-                <button
-                  type="button"
-                  onClick={() => (clipPlaying === clipId ? AudioController.stopClip() : AudioController.playClip(clipId, person.audioSrc, 20))}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-mustard py-2.5 font-bold text-umber"
-                >
-                  {clipPlaying === clipId ? <Pause size={16} /> : <Volume2 size={16} />} {clipPlaying === clipId ? 'Playing…' : 'Hear their voice'}
-                </button>
-              ) : (
-                <a
-                  href={person.listenUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-mustard py-2.5 font-bold text-umber"
-                >
-                  <Volume2 size={16} /> Hear their voice <ExternalLink size={13} />
-                </a>
-              )}
+                ) : (
+                  <a
+                    href={person.listenUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold text-umber"
+                  >
+                    <Volume2 size={12} /> Hear their voice <ExternalLink size={10} />
+                  </a>
+                )}
+              </div>
+              <p className="mt-2 text-[12px] leading-snug text-parchment/85">{person.bio}</p>
               <p className="mt-1.5 text-center text-[9px] leading-snug text-parchment/50">
-                {showBio && person.imageCredit && (
+                {person.imageCredit && (
                   <>
                     Photo: {person.imageCredit}{' '}
                     {person.imageLicense && (

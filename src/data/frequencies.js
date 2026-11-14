@@ -249,8 +249,8 @@ export const MAGAZINES = [
 
 /**
  * The record crate on The Rhythm & Sanctuary: each record is a story about
- * music made and shared in homes. Dropping the needle plays a synthesized
- * groove in that record's own feel (tempo, swing and instruments).
+ * music made and shared in homes. Dropping the needle plays that record's own
+ * original piece (src/audio/sessions.js) at its tempo and swing.
  */
 export const SESSIONS = [
   {
@@ -259,7 +259,7 @@ export const SESSIONS = [
     place: 'Harlem, New York',
     era: '1920s–1930s',
     sleeve: ['#8A3319', '#D49B24'],
-    feel: { bpm: 118, swing: 0.3, stems: ['keys', 'bass', 'shaker'] },
+    feel: { bpm: 118, swing: 0.3 },
     story: 'When rents were high and wages were low, Harlem families threw rent parties. Guests paid a small fee at the door, food came out of the kitchen, and a piano player held court in the front room. Stride pianists like Fats Waller and James P. Johnson played these parties, and by morning the rent was covered.',
   },
   {
@@ -268,7 +268,7 @@ export const SESSIONS = [
     place: 'Gary, Indiana',
     era: '1960s',
     sleeve: ['#1A535C', '#E8BD5A'],
-    feel: { bpm: 112, swing: 0.08, stems: ['bass', 'drums', 'keys', 'shaker'] },
+    feel: { bpm: 112, swing: 0.08 },
     story: 'Before the world knew the Jackson 5, the brothers practiced in their family’s small house on Jackson Street in Gary, Indiana. They rehearsed for hours under their father’s strict direction, played talent shows and local clubs, and in 1969 signed with Motown. Their first stage was home.',
   },
   {
@@ -277,7 +277,7 @@ export const SESSIONS = [
     place: 'Detroit, Michigan',
     era: '1959',
     sleeve: ['#4F5D2F', '#F2E6CC'],
-    feel: { bpm: 104, swing: 0.05, stems: ['drums', 'shaker', 'pad', 'bass'] },
+    feel: { bpm: 104, swing: 0.05 },
     story: 'Berry Gordy bought a house on West Grand Boulevard, turned the ground floor into a recording studio and offices, and lived upstairs. He hung a sign out front that read “Hitsville U.S.A.” The Supremes, Marvin Gaye and Stevie Wonder all recorded in that house, proof that a home could launch a sound heard around the world.',
   },
   {
@@ -286,7 +286,7 @@ export const SESSIONS = [
     place: '1520 Sedgwick Ave, the Bronx',
     era: '1973',
     sleeve: ['#2E1C14', '#B4502C'],
-    feel: { bpm: 96, swing: 0.12, stems: ['drums', 'bass'] },
+    feel: { bpm: 96, swing: 0.12 },
     story: 'On August 11, 1973, Cindy Campbell threw a back-to-school party in the community room of her family’s apartment building. Her brother Clive, known as DJ Kool Herc, played just the drum breaks of funk records back to back to keep the dancers moving. That party, close to home and among neighbors, is often called the birthplace of hip-hop.',
   },
 ];

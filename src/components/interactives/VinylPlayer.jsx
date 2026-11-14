@@ -33,7 +33,7 @@ export default function VinylPlayer({ accent }) {
   const start = (session) => {
     AudioController.stopGroove();
     AudioController.playClick(); // the needle meeting the groove
-    AudioController.startGroove(session.feel.stems, { owner: 'record', feel: session.feel });
+    AudioController.startGroove(null, { owner: 'record', feel: session.feel, piece: session.id });
     mine.current = true;
   };
 

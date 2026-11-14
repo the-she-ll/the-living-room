@@ -15,6 +15,7 @@
  */
 
 import { asset } from '../data/site';
+import { SESSION_PIECES } from './sessions';
 
 const BPM = 94;
 const STEPS = 32; // two bars of 16th notes
@@ -63,6 +64,8 @@ class AudioControllerImpl {
     this._clipNodes = [];
     this.bpm = BPM;
     this.swing = SWING;
+    this.piece = null; // a record's own piece (sessions.js), or null for the radio groove
+    this.steps = STEPS;
   }
 
   /**
@@ -146,6 +149,11 @@ class AudioControllerImpl {
     this.grooveBus = ctx.createGain();
     this.grooveBus.gain.value = 0.8;
     this.grooveBus.connect(this.master);
+
+    // records in the crate play their own pieces on this bus
+    this.sessionBus = ctx.createGain();
+    this.sessionBus.gain.value = 0.9;
+    this.sessionBus.connect(this.grooveBus);
 
     this.stemGain = {};
     STEMS.forEach((name) => {
@@ -465,9 +473,12 @@ class AudioControllerImpl {
    * the radio and the turntable's records never fight over the music; a
    * record passes its own `feel` (tempo and swing).
    */
-  startGroove(stems, { owner = 'radio', feel } = {}) {
+  startGroove(stems, { owner = 'radio', feel, piece } = {}) {
     if (!this.ctx) return;
     this.setFeel(feel);
+    this.piece = (piece && SESSION_PIECES[piece]) || null;
+    this.steps = this.piece ? this.piece.steps : STEPS;
+    this._step %= this.steps;
     if (stems) this.setStems(stems);
     if (this.state.grooveOwner !== owner) this._set({ grooveOwner: owner });
     if (this._timer) return;
@@ -481,6 +492,8 @@ class AudioControllerImpl {
     if (this._timer) clearInterval(this._timer);
     this._timer = null;
     this.resetFeel();
+    this.piece = null;
+    this.steps = STEPS;
     this._set({ grooveOn: false, grooveOwner: null });
   }
 
@@ -490,11 +503,15 @@ class AudioControllerImpl {
       const swing = this._step % 2 === 1 ? sd * this.swing : 0;
       this._playStep(this._step, this._nextTime + swing, sd);
       this._nextTime += sd;
-      this._step = (this._step + 1) % STEPS;
+      this._step = (this._step + 1) % this.steps;
     }
   }
 
   _playStep(step, t, sd) {
+    if (this.piece) {
+      this.piece.play(this, step, t, sd, this.sessionBus);
+      return;
+    }
     const bar = step < 16 ? 0 : 1;
     const { drums, shaker, keys, pad, bass } = this.stemGain;
 

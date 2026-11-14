@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Play, Square } from 'lucide-react';
 import { FREQUENCIES, FREQUENCY_ORDER } from '../data/frequencies';
 import { useAudio, useAudioLevel } from '../hooks/useAudio';
 import AudioController from '../audio/AudioController';
@@ -28,7 +28,8 @@ function EqBars({ level, active }) {
 
 /**
  * Hi-fi receiver: the progress tracker AND the music player.
- * - The display window plays / pauses the radio.
+ * - The radio plays automatically when a frequency is unlocked; a small
+ *   Stop / Play music button sits in the corner.
  * - The tuning knob isolates: needle on a found station plays only that
  *   station's instrument; anywhere else plays the full band of every find.
  * - Station buttons open each frequency's story; a small equalizer shows
@@ -144,7 +145,18 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
         <span className="font-display text-sm font-black tracking-wide text-parchment/85">
           She.LL <span className="text-mustard">Stereo</span>
         </span>
-        <span className="text-[10px] tracking-[0.25em] text-parchment/50 uppercase">AM · FM · Memory</span>
+        {count > 0 ? (
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="flex items-center gap-1 rounded-full border border-parchment/25 px-2.5 py-1 text-[10px] font-bold tracking-wider text-parchment/80 uppercase"
+          >
+            {grooveOn ? <Square size={9} fill="currentColor" /> : <Play size={10} fill="currentColor" />}
+            {grooveOn ? 'Stop music' : 'Play music'}
+          </button>
+        ) : (
+          <span className="text-[10px] tracking-[0.25em] text-parchment/50 uppercase">AM · FM · Memory</span>
+        )}
       </div>
 
       {/* Tuning dial glass */}
@@ -210,13 +222,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
         </div>
 
         {/* Readout */}
-        <button
-          type="button"
-          onClick={togglePlay}
-          disabled={!count}
-          aria-label={grooveOn ? 'Pause the radio' : 'Play the radio'}
-          className="dial-glass min-w-0 flex-1 rounded-md border border-black/70 px-3 py-2 text-left"
-        >
+        <div className="dial-glass min-w-0 flex-1 rounded-md border border-black/70 px-3 py-2 text-left" aria-live="polite">
           <div className="led-text flex items-baseline justify-between text-2xl leading-none">
             <span>{mhz.toFixed(1)} FM</span>
             <span className="text-base">{count}/{TOTAL}</span>
@@ -228,9 +234,9 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
                 ? solo
                   ? `▶ SOLO · ${FREQUENCIES[solo].stems.map((st) => STEM_NAMES[st]).join(' + ').toUpperCase()}`
                   : `▶ FULL BAND · ${count} OF ${TOTAL}`
-                : 'TAP TO PLAY · TURN KNOB TO ISOLATE'}
+                : 'MUSIC STOPPED · TURN KNOB TO ISOLATE'}
           </div>
-        </button>
+        </div>
 
         {/* Knob */}
         <div

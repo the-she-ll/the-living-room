@@ -90,7 +90,12 @@ class AudioControllerImpl {
   }
 
   _set(patch) {
+    const wasClip = this.state.clipPlaying;
     this.state = { ...this.state, ...patch };
+    // duck the music while a voice recording plays, then bring it back
+    if (this.grooveBus && Boolean(wasClip) !== Boolean(this.state.clipPlaying)) {
+      this.grooveBus.gain.setTargetAtTime(this.state.clipPlaying ? 0.08 : 0.8, this.ctx.currentTime, 0.25);
+    }
     this.listeners.forEach((fn) => fn(this.state));
   }
 

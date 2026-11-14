@@ -781,7 +781,9 @@ export async function startAR({ container, targetsSrc, targetOrder, onFound, onL
     const name = err?.name || '';
     if (name === 'NotAllowedError' || name === 'SecurityError') throw fail('denied', 'Camera permission denied.');
     if (name === 'NotFoundError' || name === 'OverconstrainedError') throw fail('no-camera', 'No camera found.');
-    throw fail('failed', err?.message || 'AR failed to start.');
+    // the camera is still held by a previous session or another app: worth a retry
+    if (name === 'NotReadableError' || name === 'AbortError') throw fail('busy', `${name}: ${err?.message || ''}`);
+    throw fail('failed', `${name || 'Error'}: ${err?.message || 'AR failed to start.'}`);
   }
 
   const clock = new THREE.Clock();
@@ -796,6 +798,11 @@ export async function startAR({ container, targetsSrc, targetOrder, onFound, onL
     controls,
     stop() {
       renderer.setAnimationLoop(null);
+      // release the camera right away so the lens can reopen
+      host.querySelectorAll('video').forEach((v) => {
+        v.srcObject?.getTracks?.().forEach((tr) => tr.stop());
+        v.srcObject = null;
+      });
       try {
         mindar.stop();
       } catch {

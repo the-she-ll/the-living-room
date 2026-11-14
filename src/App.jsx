@@ -82,13 +82,23 @@ export default function App() {
 
   const tuningRef = useRef(tuning);
   tuningRef.current = tuning;
+  // The radio plays automatically once something is unlocked: every sound
+  // found so far (plus `extra`, just found), unless a record is spinning.
+  const discoveredRef = useRef(discovered);
+  discoveredRef.current = discovered;
+  const startRadio = useCallback((extra) => {
+    if (AudioController.state.grooveOwner === 'record') return;
+    const stems = FREQUENCY_ORDER.filter((id) => id === extra || discoveredRef.current.includes(id)).flatMap((id) => FREQUENCIES[id].stems);
+    if (stems.length) AudioController.startGroove(stems);
+  }, []);
+
   const finishTuning = useCallback(() => {
     const t = tuningRef.current;
     setTuning(null);
     if (!t) return;
     setOpenId(t.id);
-    setTimeout(() => AudioController.playSoundbite(t.id), 250);
-  }, []);
+    setTimeout(() => startRadio(t.id), 250);
+  }, [startRadio]);
 
   const enter = async () => {
     await AudioController.unlock();
@@ -118,12 +128,10 @@ export default function App() {
       setLastTuned(id);
       if (isNew) AudioController.playTuneIn();
       else AudioController.playClick();
-      // the AR lens plays the turntable's records itself
-      if (id !== 'turntable') {
-        setTimeout(() => AudioController.playSoundbite(id), isNew ? 1300 : 100);
-      }
+      // the AR lens plays the turntable's records itself; anything else starts the radio
+      if (id !== 'turntable') setTimeout(() => startRadio(id), isNew ? 1300 : 100);
     },
-    [discover, unlockedStems],
+    [discover, startRadio],
   );
 
 

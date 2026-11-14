@@ -22,6 +22,10 @@ const ERRORS = {
     title: 'The lens is still being calibrated',
     body: 'The AR image targets for this painting haven’t been installed yet. Explore with the illustrated map for now.',
   },
+  busy: {
+    title: 'The camera is busy',
+    body: 'Another app or browser tab may be using the camera. Close it and try again, or explore with the map.',
+  },
   failed: {
     title: 'The lens couldn’t start',
     body: 'Something interrupted the camera. Close other apps that use the camera and try again, or use the map.',
@@ -37,6 +41,8 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const session = useRef(null);
   const [status, setStatus] = useState('loading'); // loading | scanning | error
   const [error, setError] = useState(null);
+  const [errorDetail, setErrorDetail] = useState('');
+  const [attempt, setAttempt] = useState(0); // bump to restart the lens
   const [tracking, setTracking] = useState(null);
   const [lastFound, setLastFound] = useState(null);
   const [mag, setMag] = useState(null); // coffee-table flip-through state
@@ -52,10 +58,11 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
 
   useEffect(() => {
     let cancelled = false;
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     (async () => {
       try {
         const { startAR } = await import('../ar/arScene.js');
-        const s = await startAR({
+        const begin = () => startAR({
           container: container.current,
           targetsSrc: SITE.arTargetsSrc,
           targetOrder: SITE.arTargetOrder,
@@ -66,6 +73,15 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
           },
           onLost: () => setTracking(null),
         });
+        let s;
+        try {
+          s = await begin();
+        } catch (err) {
+          // a camera released a moment ago (e.g. the lens closed and reopened) often needs a beat
+          if (err?.code !== 'busy' || cancelled) throw err;
+          await wait(900);
+          s = await begin();
+        }
         if (cancelled) s.stop();
         else {
           session.current = s;
@@ -93,6 +109,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
       } catch (err) {
         if (cancelled) return;
         setError(ERRORS[err?.code] ? err.code : 'failed');
+        setErrorDetail(err?.message || String(err));
         setStatus('error');
       }
     })();
@@ -101,7 +118,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
       session.current?.stop();
       session.current = null;
     };
-  }, []);
+  }, [attempt]);
 
   const found = lastFound ? FREQUENCIES[lastFound] : null;
   const table = session.current?.controls?.table;
@@ -379,12 +396,27 @@ export default function ARView({ onClose, onFound, onOpen, onFallback }) {
             <CameraOff className="mx-auto mb-3 text-sienna" size={36} />
             <h2 className="font-display text-2xl font-black">{e.title}</h2>
             <p className="mt-2 text-sm opacity-80">{e.body}</p>
-            <button type="button" onClick={onFallback} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-teal py-3.5 font-bold text-parchment">
+            {error !== 'insecure' && error !== 'no-targets' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setErrorDetail('');
+                  setStatus('loading');
+                  setAttempt((n) => n + 1);
+                }}
+                className="mt-5 w-full rounded-full bg-ink py-3.5 font-bold text-parchment"
+              >
+                Try again
+              </button>
+            )}
+            <button type="button" onClick={onFallback} className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-teal py-3.5 font-bold text-parchment">
               <MapIcon size={16} /> Explore the Illustrated Map
             </button>
             <button type="button" onClick={onClose} className="mt-2 w-full py-2 text-sm font-bold opacity-70">
               Close
             </button>
+            {errorDetail && <p className="mt-2 text-[10px] break-words opacity-40">Details: {errorDetail}</p>}
           </div>
         </div>
       )}

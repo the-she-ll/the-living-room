@@ -328,6 +328,14 @@ export const SESSIONS = [
     sleeve: ['#2E1C14', '#B4502C'],
     feel: { bpm: 96, swing: 0.12 },
     story: 'On August 11, 1973, Cindy Campbell threw a back-to-school party in the community room of her family’s apartment building. Her brother Clive, known as DJ Kool Herc, played just the drum breaks of funk records back to back to keep the dancers moving. That party, close to home and among neighbors, is often called the birthplace of hip-hop.',
+    images: [
+      {
+        src: 'images/sessions/dj-kool-herc-2009.jpg',
+        caption: 'DJ Kool Herc at the turntables in the Bronx, 2009, more than thirty-five years after the party on Sedgwick Avenue.',
+        credit: 'Photo by Bigtimepeace, February 28, 2009. Public domain, via Wikimedia Commons',
+        url: 'https://commons.wikimedia.org/wiki/File:Herc_on_the_Wheels_of_Steel.JPG',
+      },
+    ],
   },
 ];
 

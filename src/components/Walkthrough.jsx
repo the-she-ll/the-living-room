@@ -24,7 +24,7 @@ const STEPS = [
     icon: BookOpen,
     eyebrow: 'Step 3 · Explore',
     title: 'Open the story behind each object',
-    body: 'Tap any lit station to explore its story, read the history, and reflect. Locked stations show a riddle to help you find them. You can also turn the knob to tune across the dial.',
+    body: 'Tap any lit station to explore its story, read the history, and reflect. Locked stations tell you how to find them. You can also turn the knob to tune across the dial.',
   },
   {
     icon: MessageCircleHeart,
@@ -37,7 +37,7 @@ const STEPS = [
 const WAYS = [
   { icon: Nfc, label: 'Tap your phone', text: 'on the small tags hidden on the painting.' },
   { icon: Camera, label: 'AR Lens', text: 'Point your camera at the portrait, the turntable or the magazines.' },
-  { icon: MapIcon, label: 'Explore map', text: 'Tap the glowing ? spots in the app and solve the riddles.' },
+  { icon: MapIcon, label: 'Explore map', text: 'Tap the glowing ? spots on the map in the app.' },
 ];
 
 /** First-time, click-through guide. Reopened any time from the header's "?" button. */

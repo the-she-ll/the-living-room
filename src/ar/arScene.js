@@ -444,37 +444,48 @@ function comingSoonTexture(m) {
 
 /** The back of each cover: that issue's story, plus its credit and the rights line. */
 /** Page 2 (back of the cover): the issue's story summary, credit and rights line. */
-function storyTexture(m, rightsLine) {
+function storyTexture(m) {
   const { c, ctx } = paperCanvas();
-  ctx.fillStyle = '#f7efdc';
-  ctx.fillRect(0, 0, c.width, c.height);
-  ctx.fillStyle = '#2b1a10';
-  ctx.font = '600 20px "DM Sans", sans-serif';
-  ctx.globalAlpha = 0.6;
-  ctx.fillText(`${m.masthead} · ${m.date}`.toUpperCase(), 40, 64);
-  ctx.globalAlpha = 1;
-  ctx.font = '900 40px Fraunces, Georgia, serif';
-  let y = 120;
-  wrap(ctx, m.coverLine, c.width - 80).slice(0, 3).forEach((l) => {
-    ctx.fillText(l, 40, y);
-    y += 46;
-  });
-  // credits first, so the summary can stop above them and never overlap
-  ctx.font = '400 17px "DM Sans", sans-serif';
-  const foot = wrap(ctx, `© ${m.credit}. ${rightsLine}`, c.width - 80).slice(0, 4);
-  const footTop = c.height - 40 - (foot.length - 1) * 22 - 22;
-  ctx.globalAlpha = 0.55;
-  foot.forEach((l, i) => ctx.fillText(l, 40, c.height - 40 - (foot.length - 1 - i) * 22));
-  ctx.globalAlpha = 1;
-  ctx.font = '400 24px "DM Sans", sans-serif';
-  y += 12;
-  const lines = wrap(ctx, m.story, c.width - 80);
-  const fit = Math.max(1, Math.floor((footTop - 10 - y) / 32) + 1);
-  lines.slice(0, fit).forEach((l, i) => {
-    ctx.fillText(i === fit - 1 && lines.length > fit ? `${l.replace(/\s*\S*$/, '')}…` : l, 40, y);
-    y += 32;
-  });
-  return toTexture(c);
+  const tex = toTexture(c);
+  const draw = () => {
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.fillStyle = '#f7efdc';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.fillStyle = '#2b1a10';
+    ctx.font = '600 20px "DM Sans", sans-serif';
+    ctx.globalAlpha = 0.6;
+    ctx.fillText(`${m.masthead} · ${m.date}`.toUpperCase(), 40, 60);
+    ctx.globalAlpha = 1;
+    ctx.font = '900 38px Fraunces, Georgia, serif';
+    let y = 112;
+    wrap(ctx, m.coverLine, c.width - 80).slice(0, 3).forEach((l) => {
+      ctx.fillText(l, 40, y);
+      y += 44;
+    });
+    // credit at the foot (the rights line lives in the panel below the magazine)
+    ctx.font = '400 16px "DM Sans", sans-serif';
+    const foot = wrap(ctx, `© ${m.credit}.`, c.width - 80).slice(0, 3);
+    const footTop = c.height - 36 - foot.length * 20;
+    ctx.globalAlpha = 0.55;
+    foot.forEach((l, k) => ctx.fillText(l, 40, c.height - 36 - (foot.length - 1 - k) * 20));
+    ctx.globalAlpha = 1;
+    // largest text size at which the WHOLE summary fits above the credit
+    y += 10;
+    for (let size = 25; size >= 15; size -= 1) {
+      ctx.font = `400 ${size}px "DM Sans", sans-serif`;
+      const lineH = Math.round(size * 1.32);
+      const lines = wrap(ctx, m.story, c.width - 80);
+      if (y + (lines.length - 1) * lineH <= footTop - 12 || size === 15) {
+        lines.forEach((l, k) => ctx.fillText(l, 40, y + k * lineH));
+        break;
+      }
+    }
+    tex.needsUpdate = true;
+  };
+  draw();
+  // redraw once the app's fonts are ready (fallback fonts take more room)
+  document.fonts?.ready.then(draw);
+  return tex;
 }
 
 /** Page 3: one photo from the article, with a caption and photographer credit. */
@@ -545,7 +556,7 @@ function buildTable(group, { magazines, rightsLine }, shared) {
   // Per-issue textures, built once and shared by every view of the table.
   if (!shared.pages) {
     shared.pages = magazines.map((m) => {
-      const slot = { cover: comingSoonTexture(m), story: storyTexture(m, rightsLine), photo: photoPageTexture(m) };
+      const slot = { cover: comingSoonTexture(m), story: storyTexture(m), photo: photoPageTexture(m) };
       if (m.image) {
         loader.load(m.image, (tex) => {
           tex.colorSpace = THREE.SRGBColorSpace;
@@ -559,7 +570,7 @@ function buildTable(group, { magazines, rightsLine }, shared) {
 
   // Sized relative to the coffee-table target (1 unit = target width) so the
   // open spread floats just over the table without leaving the screen.
-  const SCALE = 0.95;
+  const SCALE = 1.1;
   const spread = new THREE.Group();
   spread.scale.setScalar(SCALE);
   spread.position.set(-(PAGE_W * SCALE) / 2, 0.16, 0.18);

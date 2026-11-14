@@ -216,7 +216,7 @@ export default function App() {
           </button>
           <button type="button" onClick={() => mapRef.current?.scrollIntoView({ behavior: 'smooth' })} className="rounded-xl bg-black/25 p-3">
             <BookHeart className="mx-auto mb-1 text-mustard" size={22} />
-            Use the <b>Explore Map</b> & riddles
+            Use the <b>Explore Map</b> in the app
           </button>
         </section>
 

@@ -27,8 +27,8 @@ function StoryPage({ m }) {
         {m.masthead} · {m.date}
       </p>
       <p className="font-display mt-1 text-[15px] leading-tight font-black">{m.coverLine}</p>
-      <p className="mt-2 text-[11px] leading-snug opacity-85">{m.story}</p>
-      <p className="mt-auto pt-2 text-[8px] leading-tight opacity-50">© {m.credit}</p>
+      {/* on the small page the summary fades out; it's printed in full below the book */}
+      <p className="relative mt-2 min-h-0 flex-1 overflow-hidden text-[11px] leading-snug opacity-85 [mask-image:linear-gradient(to_bottom,black_75%,transparent)]">{m.story}</p>
     </div>
   );
 }
@@ -78,7 +78,7 @@ export default function MagazineFlip({ accent }) {
     <div>
       <div
         key={magIndex}
-        className={`relative aspect-[2/3] w-[46%] max-w-[200px] animate-fade transition-[margin] duration-500 [perspective:1400px] ${open ? 'ml-[50%]' : 'mx-auto'}`}
+        className={`relative aspect-[2/3] w-[48%] max-w-[260px] animate-fade transition-[margin] duration-500 [perspective:1400px] ${open ? 'ml-[50%]' : 'mx-auto'}`}
         onTouchStart={(e) => (e.currentTarget.dataset.x = e.touches[0].clientX)}
         onTouchEnd={(e) => {
           const dx = e.changedTouches[0].clientX - Number(e.currentTarget.dataset.x || 0);
@@ -122,6 +122,13 @@ export default function MagazineFlip({ accent }) {
           <ChevronRight size={18} />
         </button>
       </div>
+
+      {open && (
+        <div className="mt-4 animate-fade rounded-xl border border-ink/10 bg-white/50 p-4">
+          <p className="font-display text-lg leading-tight font-black">{m.coverLine}</p>
+          <p className="mt-2 text-[15px] leading-relaxed">{m.story}</p>
+        </div>
+      )}
 
       <p className="mt-3 text-[11px] leading-snug opacity-55">
         {m.masthead}, {m.date} · © {m.credit}.{' '}

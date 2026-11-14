@@ -137,7 +137,7 @@ function LivingRoomScene() {
 }
 
 /**
- * The non-NFC route. Tap the illustrated painting to read each riddle, then
+ * The non-NFC route. Tap a spot on the illustrated painting, then
  * "tune in" once you've found the matching object on the real canvas.
  */
 export default function CanvasMap({ discovered, onTuneIn, onOpen }) {
@@ -182,34 +182,33 @@ export default function CanvasMap({ discovered, onTuneIn, onOpen }) {
         })}
       </div>
 
-      {/* clue card */}
+      {/* hotspot card */}
       <div className="mt-3 min-h-[112px]">
         {sel ? (
           <div key={selected} className="parchment animate-rise rounded-xl p-4 shadow-lg" style={{ borderLeft: `6px solid ${sel.color}` }}>
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">
-                  {sel.band} FM · {selFound ? sel.subtitle : 'Unknown signal'}
+                  {sel.band} FM · {sel.subtitle}
                 </p>
-                <p className="font-display text-xl font-black">{selFound ? sel.title : 'A riddle on the air…'}</p>
+                <p className="font-display text-xl font-black">{sel.title}</p>
               </div>
-              <button type="button" onClick={() => setSelected(null)} aria-label="Close clue" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-ink/10">
+              <button type="button" onClick={() => setSelected(null)} aria-label="Close" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-ink/10">
                 <X size={16} />
               </button>
             </div>
-            <p className="font-display mt-1 text-[15px] leading-snug italic">{sel.clue}</p>
             <button
               type="button"
               onClick={() => (selFound ? onOpen(selected) : onTuneIn(selected))}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3 font-bold text-parchment"
               style={{ background: sel.color }}
             >
-              <Radio size={16} /> {selFound ? 'Open this frequency' : 'Found it, tune in'}
+              <Radio size={16} /> {selFound ? 'Open this frequency' : 'Tune in'}
             </button>
           </div>
         ) : (
           <p className="px-2 pt-2 text-center text-sm text-parchment/70">
-            No NFC on your phone? Tap a glowing <span className="text-amber">?</span> to hear its riddle, find the object in the painting, then tune in.
+            No NFC on your phone? Tap a glowing <span className="text-amber">?</span> on the map to tune into that part of the room.
           </p>
         )}
       </div>

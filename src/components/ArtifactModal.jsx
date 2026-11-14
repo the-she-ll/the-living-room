@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Feather, Lock, MessageCircleHeart, Play, Radio, Sparkles, Square } from 'lucide-react';
+import { BookOpen, Lock, MessageCircleHeart, Radio, Sparkles, Square } from 'lucide-react';
 import Drawer from './Drawer';
 import { FREQUENCIES } from '../data/frequencies';
 import AudioController from '../audio/AudioController';
@@ -24,7 +24,7 @@ const TABS = [
 ];
 
 /**
- * Slide-up drawer for one artifact. Locked artifacts only reveal their riddle
+ * Slide-up drawer for one artifact. Locked artifacts only say how to find them,
  * so the hunt still has to happen in front of the painting.
  */
 export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onOpenGuestbook, onPlayRadio }) {
@@ -56,13 +56,6 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
       accent={f.color}
       labelId={`artifact-${f.id}`}
     >
-      {/* Riddle, always visible */}
-      <blockquote className="relative mb-4 rounded-xl border border-ink/15 bg-white/40 p-4 pl-10">
-        <Feather size={18} className="absolute top-4 left-3.5" style={{ color: f.color }} />
-        <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">The Riddle</p>
-        <p className="font-display mt-1 text-[17px] leading-snug italic">{f.clue}</p>
-      </blockquote>
-
       {!discovered ? (
         <div className="mb-6 rounded-xl border-2 border-dashed border-ink/25 p-5 text-center">
           <Lock className="mx-auto mb-2 opacity-60" />
@@ -94,16 +87,7 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
 
           {tab === 'explore' && (
             <div className="animate-fade space-y-5 pb-6">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="font-display text-xl font-black">{f.interactiveLabel}</h3>
-                <button
-                  type="button"
-                  onClick={() => AudioController.playSoundbite(f.id)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-ink/20 px-3 py-1.5 text-xs font-bold"
-                >
-                  <Play size={12} /> Soundbite
-                </button>
-              </div>
+              <h3 className="font-display text-xl font-black">{f.interactiveLabel}</h3>
               <Interactive accent={f.color} clipPlaying={clipPlaying} />
 
               <button

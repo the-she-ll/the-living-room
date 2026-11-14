@@ -5,7 +5,7 @@
  * downloaded when a visitor opens the AR Lens.
  */
 import * as THREE from 'three';
-import { FREQUENCIES, MAGAZINES, PANTHEON } from '../data/frequencies';
+import { FREQUENCIES, MAGAZINES, PANTHEON, SESSIONS } from '../data/frequencies';
 import { asset, RIGHTS } from '../data/site';
 import AudioController from '../audio/AudioController';
 
@@ -161,6 +161,10 @@ function buildPortraits(group, { pantheon }, shared) {
 /* ------------- turntable: four live 2D visuals over the painted record player ------------- */
 
 export const TURNTABLE_VISUALS = ['Sunday Spin', 'Mothership', 'Sound Waves', 'Equalizer'];
+// Each record in the crate (SESSIONS order) gets the visual that suits its music:
+// Rent Party → Sunday Spin, Jackson Street → Sound Waves, Hitsville → Mothership,
+// Back to School Jam → Equalizer.
+const RECORD_VISUAL = [0, 2, 1, 3];
 
 // Where the painted turntable sits inside its AR target (target width = 1 unit).
 const DECK = { x: 0.06, y: 0.03, size: 0.78 };
@@ -366,7 +370,7 @@ function buildTurntable(group, _content, shared) {
 
   const api = shared.api || {
     index: 0,
-    total: VISUALS.length,
+    total: SESSIONS.length,
     onChange: null,
     go(d) {
       api.index = (api.index + d + api.total) % api.total;
@@ -375,12 +379,25 @@ function buildTurntable(group, _content, shared) {
     },
     next: () => api.go(1),
     prev: () => api.go(-1),
-    state: () => ({ index: api.index, total: api.total, name: TURNTABLE_VISUALS[api.index] }),
+    // visitors can also cycle the visual independently of the record
+    visualShift: 0,
+    nextVisual() {
+      api.visualShift = (api.visualShift + 1) % VISUALS.length;
+      AudioController.playClick();
+      api.onChange?.(api.state());
+    },
+    state: () => ({
+      index: api.index,
+      total: api.total,
+      record: SESSIONS[api.index],
+      visualName: TURNTABLE_VISUALS[(RECORD_VISUAL[api.index] + api.visualShift) % VISUALS.length],
+    }),
   };
   shared.api = api;
 
   let last = 0;
   let shown = api.index;
+  let shownShift = api.visualShift;
   let fade = 1;
   let smooth = 0;
   const update = (t) => {
@@ -389,13 +406,16 @@ function buildTurntable(group, _content, shared) {
     const lvl = AudioController.getLevel();
     smooth = lvl > smooth ? lvl : smooth * 0.85 + lvl * 0.15;
     // quick dip to transparent when switching visuals
-    if (shown !== api.index) {
+    if (shown !== api.index || shownShift !== api.visualShift) {
       fade = Math.max(0, fade - 0.25);
-      if (fade === 0) shown = api.index;
+      if (fade === 0) {
+        shown = api.index;
+        shownShift = api.visualShift;
+      }
     } else fade = Math.min(1, fade + 0.2);
     ctx.clearRect(0, 0, S, S);
     ctx.globalAlpha = 1;
-    VISUALS[shown](ctx, S, t, smooth);
+    VISUALS[(RECORD_VISUAL[shown] + api.visualShift) % VISUALS.length](ctx, S, t, smooth);
     plane.material.opacity = fade;
     plane.position.z = 0.1 + Math.sin(t * 1.4) * 0.008;
     tex.needsUpdate = true;

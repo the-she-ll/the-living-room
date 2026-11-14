@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { CameraOff, ChevronLeft, ChevronRight, ExternalLink, Loader2, Map as MapIcon, Pause, ScanLine, Volume2, X } from 'lucide-react';
 import { FREQUENCIES } from '../data/frequencies';
-import { SITE, RIGHTS } from '../data/site';
+import { SITE, RIGHTS, asset } from '../data/site';
 import AudioController from '../audio/AudioController';
 import { useAudio } from '../hooks/useAudio';
 
@@ -32,7 +32,7 @@ const ERRORS = {
  * Full-screen MindAR camera view. Finding a target marks that frequency
  * discovered; any failure offers a seamless fallback to the map.
  */
-export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleMusic }) {
+export default function ARView({ onClose, onFound, onOpen, onFallback }) {
   const container = useRef(null);
   const session = useRef(null);
   const [status, setStatus] = useState('loading'); // loading | scanning | error
@@ -41,8 +41,9 @@ export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleM
   const [lastFound, setLastFound] = useState(null);
   const [mag, setMag] = useState(null); // coffee-table flip-through state
   const [pan, setPan] = useState(null); // portrait (Portraits of Power) state
-  const [deck, setDeck] = useState(null); // turntable visuals state
-  const { clipPlaying, grooveOn } = useAudio();
+  const [deck, setDeck] = useState(null); // turntable: which record is on
+  const [deckInfo, setDeckInfo] = useState(false); // record story panel expanded?
+  const { clipPlaying, grooveOn, grooveOwner } = useAudio();
   const [panInfo, setPanInfo] = useState(false); // portrait panel starts collapsed; visitors tap "Learn More"
   const [panCredits, setPanCredits] = useState(false); // photo credit revealed?
   const swipeX = useRef(null);
@@ -112,6 +113,35 @@ export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleM
   const deckApi = session.current?.controls?.turntable;
   const showDeck = status === 'scanning' && tracking === 'turntable' && deckApi && deck;
   const swiper = showMag ? table : showPan ? portraits : showDeck ? deckApi : null;
+  const rec = deck?.record;
+  const recordPlaying = grooveOn && grooveOwner === 'record';
+
+  // The record on the turntable plays its own piece (not the radio). Switching
+  // records while the needle is down plays the new one.
+  const playRecord = (r) => {
+    AudioController.stopGroove();
+    AudioController.startGroove(null, { owner: 'record', feel: r.feel, piece: r.id });
+  };
+  const toggleRecord = async () => {
+    await AudioController.unlock();
+    if (recordPlaying) AudioController.stopGroove();
+    else if (rec) playRecord(rec);
+  };
+  const lastRec = useRef(null);
+  useEffect(() => {
+    if (!showDeck || !rec) return;
+    if (lastRec.current !== rec.id) {
+      const first = lastRec.current === null;
+      lastRec.current = rec.id;
+      // drop the needle on first find; keep the needle where it was when switching
+      if (first || AudioController.state.grooveOwner === 'record') playRecord(rec);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showDeck, rec]);
+  // lift the needle when the lens closes
+  useEffect(() => () => {
+    if (AudioController.state.grooveOwner === 'record') AudioController.stopGroove();
+  }, []);
   const e = error ? ERRORS[error] : null;
 
   return (
@@ -161,29 +191,56 @@ export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleM
 
       {status === 'scanning' && found && (
         <div className="safe-bottom absolute inset-x-0 bottom-0 z-10 space-y-2 px-4">
-          {showDeck && (
+          {showDeck && rec && (
             <div className="mx-auto max-w-md rounded-2xl bg-umber-deep/90 p-3 backdrop-blur">
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={deckApi.prev} aria-label="Previous visual" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-parchment/15">
+              <div className="flex items-start gap-2">
+                <button type="button" onClick={deckApi.prev} aria-label="Previous record" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-parchment/15">
                   <ChevronLeft size={20} />
                 </button>
                 <div className="min-w-0 flex-1 text-center leading-tight">
-                  <p className="led-text text-sm">
-                    {deck.index + 1} OF {deck.total} · THE RHYTHM & SANCTUARY
+                  {deckInfo && <p className="led-text text-sm">{deck.index + 1} OF {deck.total} · THE RHYTHM & SANCTUARY</p>}
+                  <p className="font-display text-xl font-black">{rec.title}</p>
+                  <p className="text-[11px] text-parchment/70">
+                    {rec.place} · {rec.era}
                   </p>
-                  <p className="font-display text-xl font-black">{deck.name}</p>
-                  <button
-                    type="button"
-                    onClick={onToggleMusic}
-                    className="mt-1 inline-flex items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-umber"
-                  >
-                    {grooveOn ? <Pause size={12} /> : <Volume2 size={12} />} {grooveOn ? 'Pause the music' : 'Play the music'}
-                  </button>
+                  <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+                    <button
+                      type="button"
+                      onClick={toggleRecord}
+                      className="inline-flex items-center gap-1 rounded-full bg-mustard px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-umber"
+                    >
+                      {recordPlaying ? <Pause size={12} /> : <Volume2 size={12} />} {recordPlaying ? 'Lift the needle' : 'Drop the needle'}
+                    </button>
+                    <button type="button" onClick={deckApi.nextVisual} aria-label={`Change visual (now ${deck.visualName})`} className="text-[11px] font-bold whitespace-nowrap text-parchment/80">
+                      ✦ {deck.visualName}
+                    </button>
+                    <button type="button" onClick={() => setDeckInfo((v) => !v)} aria-expanded={deckInfo} className="text-[11px] font-bold whitespace-nowrap text-mustard">
+                      {deckInfo ? 'Hide info ▾' : 'Learn More ▴'}
+                    </button>
+                  </div>
                 </div>
-                <button type="button" onClick={deckApi.next} aria-label="Next visual" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">
+                <button type="button" onClick={deckApi.next} aria-label="Next record" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">
                   <ChevronRight size={20} />
                 </button>
               </div>
+              {deckInfo && (
+                <div className="no-scrollbar mt-2 max-h-[42vh] overflow-y-auto">
+                  <p className="text-[12px] leading-snug text-parchment/85">{rec.story}</p>
+                  {rec.images?.length > 0 && (
+                    <div className="no-scrollbar -mx-3 mt-2 flex snap-x snap-mandatory gap-2 overflow-x-auto px-3">
+                      {rec.images.map((img) => (
+                        <figure key={img.src} className={`shrink-0 snap-start ${rec.images.length > 1 ? 'w-[70%]' : 'w-full'}`}>
+                          <img src={asset(img.src)} alt={img.caption} className="max-h-48 w-full rounded-md bg-black/30 object-contain sepia-[0.25]" />
+                          <figcaption className="mt-1 text-[10px] leading-snug text-parchment/70">
+                            {img.caption}
+                            <span className="block text-[9px] text-parchment/50">{img.credit}</span>
+                          </figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           {showPan && person && (

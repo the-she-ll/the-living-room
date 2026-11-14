@@ -118,21 +118,14 @@ export default function App() {
       setLastTuned(id);
       if (isNew) AudioController.playTuneIn();
       else AudioController.playClick();
-      if (id === 'turntable') {
-        // the turntable's visuals dance to the radio, so start the music
-        setTimeout(() => AudioController.startGroove(unlockedStems(id)), isNew ? 1300 : 100);
-      } else {
+      // the AR lens plays the turntable's records itself
+      if (id !== 'turntable') {
         setTimeout(() => AudioController.playSoundbite(id), isNew ? 1300 : 100);
       }
     },
     [discover, unlockedStems],
   );
 
-  const toggleMusic = async () => {
-    await AudioController.unlock();
-    if (AudioController.state.grooveOn) AudioController.stopGroove();
-    else AudioController.startGroove(unlockedStems());
-  };
 
   const arFallback = () => {
     setArOpen(false);
@@ -262,7 +255,6 @@ export default function App() {
             setOpenId(id);
           }}
           onFallback={arFallback}
-          onToggleMusic={toggleMusic}
         />
       )}
 

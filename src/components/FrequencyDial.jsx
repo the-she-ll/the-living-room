@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Lock, Pause, Play } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { FREQUENCIES, FREQUENCY_ORDER } from '../data/frequencies';
 import { useAudio, useAudioLevel } from '../hooks/useAudio';
 import AudioController from '../audio/AudioController';
@@ -13,15 +13,33 @@ const SNAP = 0.7;
 const STEM_NAMES = { pad: 'Organ', drums: 'Drums', shaker: 'Shaker', bass: 'Bass', keys: 'Piano' };
 const TOTAL = FREQUENCY_ORDER.length;
 
+/** A tiny three-bar equalizer that bounces with the music. */
+function EqBars({ level, active }) {
+  const t = performance.now() / 1000;
+  return (
+    <span className="flex h-3.5 items-end gap-[2px]" aria-hidden="true">
+      {[0, 1, 2].map((k) => {
+        const h = active ? 25 + (Math.sin(t * (6 + k * 2.3) + k * 1.7) * 0.5 + 0.5) * 45 + level * 30 : 18;
+        return <span key={k} className={`w-[3px] rounded-sm ${active ? 'bg-amber' : 'bg-parchment/20'}`} style={{ height: `${Math.min(100, h)}%` }} />;
+      })}
+    </span>
+  );
+}
+
 /**
  * Hi-fi receiver: the progress tracker AND the music player.
- * Glass tuning dial with station markers, VU meter, a draggable tuning knob,
- * a Play bar that plays every unlocked sound layer together, and one
- * station preset (amber LED) per frequency.
+ * - The display window plays / pauses the radio.
+ * - The tuning knob isolates: needle on a found station plays only that
+ *   station's instrument; anywhere else plays the full band of every find.
+ * - Station buttons open each frequency's story; a small equalizer shows
+ *   which instruments are playing.
  */
 export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClue }) {
   const [mhz, setMhz] = useState(() => (lastTuned ? +FREQUENCIES[lastTuned].band : 98));
-  const { grooveOn: anyGroove, grooveOwner } = useAudio();
+  // Solo only once the visitor turns the knob themselves (not when the needle
+  // glides to a newly found station).
+  const [userTuned, setUserTuned] = useState(false);
+  const { grooveOn: anyGroove, grooveOwner, stems } = useAudio();
   // the radio's own music (a record on the turntable may be playing instead)
   const grooveOn = anyGroove && grooveOwner === 'radio';
   const level = useAudioLevel(true);
@@ -30,18 +48,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
     () => FREQUENCY_ORDER.filter((id) => discovered.includes(id)).flatMap((id) => FREQUENCIES[id].stems),
     [discovered],
   );
-  const full = discovered.length === FREQUENCY_ORDER.length;
 
-  // Newly found frequencies join the music right away if it's playing.
-  useEffect(() => {
-    if (grooveOn) AudioController.setStems(unlockedStems);
-  }, [grooveOn, unlockedStems]);
-
-  const togglePlay = async () => {
-    await AudioController.unlock();
-    if (grooveOn) AudioController.stopGroove();
-    else if (unlockedStems.length) AudioController.startGroove(unlockedStems);
-  };
   const knob = useRef(null);
   const drag = useRef(null);
   const mhzRef = useRef(mhz);
@@ -50,6 +57,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
   // Glide the needle when something new is tuned in.
   useEffect(() => {
     if (!lastTuned) return undefined;
+    setUserTuned(false);
     const target = +FREQUENCIES[lastTuned].band;
     let raf;
     const step = () => {
@@ -74,6 +82,21 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
   const onStation = nearest && discovered.includes(nearest) ? nearest : null;
   const count = discovered.length;
 
+  // What the knob has tuned in: one station solo, or the full band.
+  const solo = userTuned ? onStation : null;
+  const tunedStems = solo ? FREQUENCIES[solo].stems : unlockedStems;
+  const tunedKey = tunedStems.join(',');
+  useEffect(() => {
+    if (grooveOn) AudioController.setStems(tunedStems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grooveOn, tunedKey]);
+
+  const togglePlay = async () => {
+    await AudioController.unlock();
+    if (grooveOn) AudioController.stopGroove();
+    else if (tunedStems.length) AudioController.startGroove(tunedStems);
+  };
+
   /* ---- knob: rotate by dragging around its centre ---- */
   const angleFrom = (e) => {
     const r = knob.current.getBoundingClientRect();
@@ -81,6 +104,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
   };
   const onPointerDown = (e) => {
     e.currentTarget.setPointerCapture(e.pointerId);
+    setUserTuned(true);
     drag.current = { a: angleFrom(e), lastClick: mhz };
   };
   const onPointerMove = (e) => {
@@ -91,9 +115,12 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
     if (d < -Math.PI) d += 2 * Math.PI;
     drag.current.a = a;
     const next = Math.min(MAX - 0.5, Math.max(MIN + 0.5, mhzRef.current + d * 2.2));
-    if (Math.abs(next - drag.current.lastClick) > 0.4) {
+    if (Math.abs(next - drag.current.lastClick) > 0.35) {
       drag.current.lastClick = next;
-      AudioController.playClick();
+      // static between stations, a click when passing over one
+      const near = FREQUENCY_ORDER.some((id) => Math.abs(+FREQUENCIES[id].band - next) < SNAP);
+      if (near) AudioController.playClick();
+      else AudioController.playStatic(grooveOn ? 0.5 : 1);
     }
     mhzRef.current = next;
     setMhz(next);
@@ -103,6 +130,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
     if (nearest) setMhz(+FREQUENCIES[nearest].band); // snap
   };
   const onKnobKey = (e) => {
+    if (e.key.startsWith('Arrow')) setUserTuned(true);
     if (e.key === 'ArrowRight' || e.key === 'ArrowUp') setMhz((m) => Math.min(MAX - 0.5, m + 0.2));
     if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') setMhz((m) => Math.max(MIN + 0.5, m - 0.2));
   };
@@ -184,8 +212,9 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
         {/* Readout */}
         <button
           type="button"
-          onClick={() => onStation && onOpen(onStation)}
-          disabled={!onStation}
+          onClick={togglePlay}
+          disabled={!count}
+          aria-label={grooveOn ? 'Pause the radio' : 'Play the radio'}
           className="dial-glass min-w-0 flex-1 rounded-md border border-black/70 px-3 py-2 text-left"
         >
           <div className="led-text flex items-baseline justify-between text-2xl leading-none">
@@ -193,11 +222,13 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
             <span className="text-base">{count}/{TOTAL}</span>
           </div>
           <div className="led-text mt-1 truncate text-sm opacity-90">
-            {onStation
-              ? `● ${FREQUENCIES[onStation].title.toUpperCase()} · TAP TO OPEN`
-              : nearest
-                ? '··· STATIC · FIND IT IN THE PAINTING'
-                : 'TURN THE KNOB TO TUNE ···'}
+            {!count
+              ? 'FIND A FREQUENCY TO START THE MUSIC'
+              : grooveOn
+                ? solo
+                  ? `▶ SOLO · ${FREQUENCIES[solo].stems.map((st) => STEM_NAMES[st]).join(' + ').toUpperCase()}`
+                  : `▶ FULL BAND · ${count} OF ${TOTAL}`
+                : 'TAP TO PLAY · TURN KNOB TO ISOLATE'}
           </div>
         </button>
 
@@ -223,32 +254,6 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
         </div>
       </div>
 
-      {/* Play the unlocked mix */}
-      <button
-        type="button"
-        onClick={togglePlay}
-        disabled={!discovered.length}
-        className={`mt-3 flex w-full items-center gap-3 rounded-xl bg-mustard px-4 py-3 text-left text-umber shadow-[0_4px_0_#8a5c0c] transition active:translate-y-0.5 active:shadow-[0_2px_0_#8a5c0c] disabled:bg-[#4a3226] disabled:text-parchment/50 disabled:shadow-none ${
-          full && !grooveOn ? 'animate-led-pulse' : ''
-        }`}
-      >
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-umber text-mustard">
-          {grooveOn ? <Pause size={20} /> : <Play size={20} className="translate-x-0.5" />}
-        </span>
-        <span className="min-w-0 leading-tight">
-          <span className="font-display block text-lg font-black">
-            {!discovered.length ? 'No music yet' : grooveOn ? 'Pause the music' : 'Play your radio'}
-          </span>
-          <span className="block text-xs opacity-80">
-            {!discovered.length
-              ? 'Find a frequency in the painting to unlock your first sound'
-              : full
-                ? `Full band: all ${TOTAL} frequencies in sync`
-                : `${discovered.length} of ${TOTAL} frequencies found. Each new find adds a sound`}
-          </span>
-        </span>
-      </button>
-
       {/* Presets */}
       <div className="mt-3 grid grid-cols-4 gap-1.5">
         {FREQUENCY_ORDER.map((id, i) => {
@@ -268,8 +273,8 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
               <span className={`flex items-center gap-0.5 text-[10px] leading-tight ${on ? 'text-parchment' : 'text-parchment/40'}`}>
                 {on ? f.title.replace(/^The /, '') : <><Lock size={9} /> Locked</>}
               </span>
-              <span className={`text-[9px] tracking-wider uppercase ${on ? 'text-mustard' : 'text-parchment/30'}`}>
-                {on && grooveOn ? '♪ ' : ''}
+              <span className={`flex items-center gap-1 text-[9px] tracking-wider uppercase ${on ? 'text-mustard' : 'text-parchment/30'}`}>
+                {on && <EqBars level={level} active={grooveOn && f.stems.every((st) => stems[st])} />}
                 {f.stems.map((st) => STEM_NAMES[st]).join(' + ')}
               </span>
             </button>

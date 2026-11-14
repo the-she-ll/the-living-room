@@ -18,7 +18,7 @@ const STEPS = [
     icon: Play,
     eyebrow: 'Step 2 · Listen',
     title: 'Your radio grows with every find',
-    body: 'Each frequency lights a station on the radio and unlocks a new sound: bass and drums, piano, organ and more. Press Play to hear them together. Find all four for the full band.',
+    body: 'Each frequency lights a station on the radio and unlocks a new sound: bass and drums, piano, organ and more. Tap the radio’s display to play everything you’ve found, and turn the knob onto a station to hear just that sound. Find all four for the full band.',
   },
   {
     icon: BookOpen,

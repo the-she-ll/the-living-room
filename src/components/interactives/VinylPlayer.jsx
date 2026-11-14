@@ -1,50 +1,92 @@
-import { useEffect, useState } from 'react';
-import { Disc3, Pause, Play } from 'lucide-react';
-import { LINER_NOTES } from '../../data/frequencies';
+import { useEffect, useRef, useState } from 'react';
+import { Pause, Play } from 'lucide-react';
+import { SESSIONS } from '../../data/frequencies';
 import AudioController from '../../audio/AudioController';
 import { useAudio } from '../../hooks/useAudio';
 
-/** Spinning record + tonearm. Plays the bassline stem with drums underneath. */
+/** An original record sleeve: two-tone stripes and the record's title. */
+function Sleeve({ s, active }) {
+  const [a, b] = s.sleeve;
+  return (
+    <div
+      className={`relative aspect-square w-full overflow-hidden rounded-[3px] shadow-[0_4px_10px_rgba(0,0,0,0.3)] transition ${active ? 'ring-4 ring-mustard' : ''}`}
+      style={{ background: `repeating-linear-gradient(135deg, ${a} 0 14px, ${b} 14px 18px)` }}
+    >
+      <span className="absolute inset-x-1 bottom-1 rounded-sm bg-black/55 px-1 py-0.5 text-center text-[9px] leading-tight font-bold text-parchment">{s.title}</span>
+    </div>
+  );
+}
+
+/**
+ * The Rhythm & Sanctuary: pick a record from the crate, drop the needle, and
+ * hear a groove in that record's own feel while its story appears.
+ */
 export default function VinylPlayer({ accent }) {
-  const { grooveOn } = useAudio();
-  const [mine, setMine] = useState(false); // did this player start the groove?
-  const [note, setNote] = useState(0);
-  const playing = grooveOn && mine;
+  const { grooveOn, grooveOwner } = useAudio();
+  const [pick, setPick] = useState(0);
+  const [needle, setNeedle] = useState(false); // needle down on this player?
+  // the radio taking over the music lifts this needle
+  const playing = needle && grooveOn && grooveOwner === 'record';
+  const mine = useRef(false);
+  const s = SESSIONS[pick];
 
-  useEffect(() => () => {
-    if (mine) AudioController.stopGroove();
-  }, [mine]);
+  const start = (session) => {
+    AudioController.stopGroove();
+    AudioController.playClick(); // the needle meeting the groove
+    AudioController.startGroove(session.feel.stems, { owner: 'record', feel: session.feel });
+    mine.current = true;
+  };
 
-  const toggle = () => {
+  const stop = () => {
+    if (mine.current && AudioController.state.grooveOwner === 'record') AudioController.stopGroove();
+    mine.current = false;
+  };
+
+  // Lift the needle when the drawer closes.
+  useEffect(() => stop, []);
+
+  const toggle = async () => {
+    await AudioController.unlock();
     if (playing) {
-      AudioController.stopGroove();
-      setMine(false);
+      stop();
+      setNeedle(false);
     } else {
-      AudioController.playSoundbite('turntable');
-      AudioController.stopGroove();
-      AudioController.startGroove(['bass', 'drums']);
-      setMine(true);
+      start(s);
+      setNeedle(true);
     }
+  };
+
+  const choose = (i) => {
+    if (i === pick) return;
+    setPick(i);
+    AudioController.playClick();
+    if (playing) start(SESSIONS[i]); // swap records while it plays
   };
 
   return (
     <div>
+      {/* the crate */}
+      <p className="mb-2 text-sm opacity-75">Pick a record from the crate, then drop the needle.</p>
+      <div className="mb-4 grid grid-cols-4 gap-2">
+        {SESSIONS.map((r, i) => (
+          <button key={r.id} type="button" onClick={() => choose(i)} aria-pressed={i === pick} aria-label={`${r.title}, ${r.place}, ${r.era}`}>
+            <Sleeve s={r} active={i === pick} />
+          </button>
+        ))}
+      </div>
+
+      {/* the turntable */}
       <div className="relative mx-auto aspect-[5/4] w-full max-w-sm rounded-xl bg-[linear-gradient(160deg,#7a4a2a,#4a2b18)] p-4 shadow-[inset_0_2px_0_rgba(255,255,255,0.15),0_10px_25px_rgba(0,0,0,0.3)]">
         <div className="absolute inset-3 rounded-lg bg-[#2a1810] shadow-inner" />
-        {/* platter */}
         <div className="absolute top-1/2 left-[42%] aspect-square w-[66%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3a3a3a] p-1.5 shadow-lg">
-          <div
-            className={`vinyl-grooves relative h-full w-full rounded-full ${playing ? 'animate-spin-33' : ''}`}
-            style={{ boxShadow: 'inset 0 0 0 1px #000' }}
-          >
+          <div key={s.id} className={`vinyl-grooves relative h-full w-full animate-fade rounded-full ${playing ? 'animate-spin-33' : ''}`} style={{ boxShadow: 'inset 0 0 0 1px #000' }}>
             <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_30deg,transparent_0_40deg,rgba(255,255,255,0.12)_50deg,transparent_60deg_220deg,rgba(255,255,255,0.08)_230deg,transparent_240deg)]" />
-            <div className="absolute top-1/2 left-1/2 grid aspect-square w-[34%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-center" style={{ background: accent }}>
-              <span className="font-display px-1 text-[9px] leading-tight font-black text-parchment">SUNDAY<br />SESSIONS</span>
+            <div className="absolute top-1/2 left-1/2 grid aspect-square w-[36%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full px-1 text-center" style={{ background: s.sleeve[0] }}>
+              <span className="font-display text-[9px] leading-tight font-black text-parchment">{s.title}</span>
               <span className="absolute h-1.5 w-1.5 rounded-full bg-black" />
             </div>
           </div>
         </div>
-        {/* tonearm */}
         <div
           className="absolute top-[14%] right-[10%] h-[62%] w-2 origin-top rounded-full bg-gradient-to-b from-gray-200 to-gray-400 shadow transition-transform duration-700"
           style={{ transform: `rotate(${playing ? 24 : 6}deg)` }}
@@ -52,7 +94,7 @@ export default function VinylPlayer({ accent }) {
           <span className="absolute -top-2 -left-2 h-6 w-6 rounded-full bg-gray-300 shadow" />
           <span className="absolute -bottom-1 -left-1 h-4 w-4 rounded-sm bg-gray-700" />
         </div>
-        <div className="led-text absolute right-5 bottom-4 text-sm">{playing ? '33⅓ ●' : '33⅓ ○'}</div>
+        <div className="led-text absolute right-5 bottom-4 text-sm">{playing ? `${s.feel.bpm} BPM ●` : '33⅓ ○'}</div>
       </div>
 
       <button
@@ -64,24 +106,26 @@ export default function VinylPlayer({ accent }) {
         {playing ? <Pause size={18} /> : <Play size={18} />} {playing ? 'Lift the Needle' : 'Drop the Needle'}
       </button>
 
-      <div className="mt-4 rounded-lg border border-ink/15 bg-white/50 p-4">
-        <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">
-          <Disc3 size={14} /> Liner Notes
-        </p>
-        <div className="mb-2 flex gap-1.5">
-          {LINER_NOTES.map((t, i) => (
-            <button
-              type="button"
-              key={t.side}
-              onClick={() => setNote(i)}
-              className={`rounded px-2 py-1 text-xs font-bold ${note === i ? 'bg-ink text-parchment' : 'bg-ink/10'}`}
-            >
-              {t.side}
-            </button>
-          ))}
-        </div>
-        <p className="font-display text-lg font-black">{LINER_NOTES[note].title}</p>
-        <p className="text-sm opacity-80">{LINER_NOTES[note].note}</p>
+      {/* the story arrives with the music */}
+      <div className="mt-4 min-h-[148px] rounded-xl border border-ink/15 bg-white/50 p-4">
+        {playing ? (
+          <div key={s.id} className="animate-fade">
+            <p className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">
+              Now playing · {s.place} · {s.era}
+            </p>
+            <p className="font-display mt-1 text-xl font-black">{s.title}</p>
+            <p className="mt-2 text-[15px] leading-relaxed">{s.story}</p>
+          </div>
+        ) : (
+          <div className="grid h-full min-h-[116px] place-items-center text-center">
+            <p className="text-sm opacity-60">
+              <span className="font-display block text-lg font-black opacity-100">{s.title}</span>
+              {s.place} · {s.era}
+              <br />
+              Drop the needle to hear its story.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

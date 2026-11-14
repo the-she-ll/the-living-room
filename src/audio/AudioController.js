@@ -52,6 +52,7 @@ class AudioControllerImpl {
       unlocked: false,
       ambientOn: false,
       grooveOn: false,
+      grooveOwner: null, // 'radio' or 'record': only one music source plays at a time
       stems: { bass: false, drums: false, shaker: false, keys: false, pad: false },
       clipPlaying: null,
     };
@@ -60,6 +61,21 @@ class AudioControllerImpl {
     this._nextTime = 0;
     this._clip = null;
     this._clipNodes = [];
+    this.bpm = BPM;
+    this.swing = SWING;
+  }
+
+  /**
+   * Tempo and swing for the groove. Records on the turntable each set their
+   * own feel; resetFeel() returns to the radio's default.
+   */
+  setFeel({ bpm = BPM, swing = SWING } = {}) {
+    this.bpm = bpm;
+    this.swing = swing;
+  }
+
+  resetFeel() {
+    this.setFeel();
   }
 
   /* ------------------------------ plumbing ----------------------------- */
@@ -352,7 +368,7 @@ class AudioControllerImpl {
   /* ---------------------------- instruments ---------------------------- */
 
   _stepDur() {
-    return 60 / BPM / 4;
+    return 60 / this.bpm / 4;
   }
 
   _kick(dest, t, vel) {
@@ -444,9 +460,16 @@ class AudioControllerImpl {
     STEMS.forEach((s) => this.setStem(s, names.includes(s)));
   }
 
-  startGroove(stems) {
+  /**
+   * Start (or take over) the one groove. `owner` says who is playing it, so
+   * the radio and the turntable's records never fight over the music; a
+   * record passes its own `feel` (tempo and swing).
+   */
+  startGroove(stems, { owner = 'radio', feel } = {}) {
     if (!this.ctx) return;
+    this.setFeel(feel);
     if (stems) this.setStems(stems);
+    if (this.state.grooveOwner !== owner) this._set({ grooveOwner: owner });
     if (this._timer) return;
     this._step = 0;
     this._nextTime = this.ctx.currentTime + 0.1;
@@ -457,13 +480,14 @@ class AudioControllerImpl {
   stopGroove() {
     if (this._timer) clearInterval(this._timer);
     this._timer = null;
-    this._set({ grooveOn: false });
+    this.resetFeel();
+    this._set({ grooveOn: false, grooveOwner: null });
   }
 
   _schedule() {
     const sd = this._stepDur();
     while (this._nextTime < this.ctx.currentTime + SCHEDULE_AHEAD) {
-      const swing = this._step % 2 === 1 ? sd * SWING : 0;
+      const swing = this._step % 2 === 1 ? sd * this.swing : 0;
       this._playStep(this._step, this._nextTime + swing, sd);
       this._nextTime += sd;
       this._step = (this._step + 1) % STEPS;

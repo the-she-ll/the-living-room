@@ -21,7 +21,9 @@ const TOTAL = FREQUENCY_ORDER.length;
  */
 export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClue }) {
   const [mhz, setMhz] = useState(() => (lastTuned ? +FREQUENCIES[lastTuned].band : 98));
-  const { grooveOn } = useAudio();
+  const { grooveOn: anyGroove, grooveOwner } = useAudio();
+  // the radio's own music (a record on the turntable may be playing instead)
+  const grooveOn = anyGroove && grooveOwner === 'radio';
   const level = useAudioLevel(true);
 
   const unlockedStems = useMemo(

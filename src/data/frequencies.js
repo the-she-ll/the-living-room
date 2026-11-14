@@ -28,7 +28,10 @@ export const FREQUENCIES = {
       'Those walls answered a public culture that rarely showed Black people with dignity. Mainstream newspapers, textbooks and television often left Black achievement out or distorted it. Putting thinkers, artists and leaders next to grandparents and graduates made a claim: this lineage is ours, and it is distinguished.',
       'For children growing up in those rooms, the portrait wall was an early lesson in self-representation. It taught them who was worth remembering, and that they belonged in that company.',
     ],
-    photoCaption: 'Portrait wall, family collection (archival image placeholder)',
+    photo: 'images/frequencies/portraits.jpg',
+    photoCaption: 'A visitor studies a painted gallery of Black leaders at an art exhibition in the 1970s.',
+    photoCredit: 'U.S. National Archives, DOCUMERICA project (U.S. Environmental Protection Agency), NAID 556261. Public domain. Sepia tone added.',
+    photoSourceUrl: 'https://catalog.archives.gov/id/556261',
     reflection: 'Whose face hung on the wall in your family home, and what did it teach you without saying a word?',
   },
 

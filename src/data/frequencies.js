@@ -270,5 +270,5 @@ export const VOICEMAILS = [
   { digit: 3, title: 'My Sister’s Keeper, a Fellow Workaholic', date: 'August 24, 2020', note: '', audioSrc: 'audio/archive/03-my-sisters-keeper-2020-08-24.m4a' },
   { digit: 4, title: 'Navigating New Love: Talks with Friends', date: 'May 28, 2020', note: '', audioSrc: 'audio/archive/04-navigating-new-love-2020-05-28.m4a' },
   { digit: 5, title: 'My Biggest Challenges in an Interview', date: 'September 27, 2018', note: '', audioSrc: 'audio/archive/05-my-biggest-challenges-2018-09-27.m4a' },
-  { digit: 6, title: 'My Last of Love', date: 'July 12, 2021', note: '', audioSrc: 'audio/archive/06-my-last-of-love-2021-07-12.m4a' },
+  { digit: 6, title: 'My Last Act of Love', date: 'July 12, 2021', note: '', audioSrc: 'audio/archive/06-my-last-act-of-love-2021-07-12.m4a' },
 ];

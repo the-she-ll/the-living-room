@@ -183,6 +183,7 @@ export default function RotaryDial({ accent, clipPlaying }) {
               )}
             </div>
             {vm.title && <p className="font-display mt-1 text-lg font-bold">{vm.title}</p>}
+            {vm.date && <p className="led-text text-base">{vm.date.toUpperCase()}</p>}
             {vm.note && <p className="mt-1 text-sm leading-snug text-parchment/80">{vm.note}</p>}
           </div>
         )}

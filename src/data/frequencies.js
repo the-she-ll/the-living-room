@@ -259,14 +259,14 @@ export const LINER_NOTES = [
  * herself and her friends, one per digit on the rotary dial.
  *
  * For each: put the file in public/audio/archive/ (mp3 or m4a) and set
- * `audioSrc` (e.g. 'audio/archive/recording-1.m4a'). `title` and `note` are
- * optional short words shown while it plays. Only include friends who have
+ * `audioSrc` (e.g. 'audio/archive/recording-1.m4a'), its `title` and the
+ * `date` it was recorded. `note` is optional extra words shown while it plays. Only include friends who have
  * agreed to be heard. Slots without audio say "coming soon".
  */
 export const VOICEMAILS = [
-  { digit: 1, title: '', note: '', audioSrc: '' },
-  { digit: 2, title: '', note: '', audioSrc: '' },
-  { digit: 3, title: '', note: '', audioSrc: '' },
-  { digit: 4, title: '', note: '', audioSrc: '' },
-  { digit: 5, title: '', note: '', audioSrc: '' },
+  { digit: 1, title: '', date: '', note: '', audioSrc: '' },
+  { digit: 2, title: '', date: '', note: '', audioSrc: '' },
+  { digit: 3, title: '', date: '', note: '', audioSrc: '' },
+  { digit: 4, title: '', date: '', note: '', audioSrc: '' },
+  { digit: 5, title: 'My Biggest Challenges in an Interview', date: 'September 27, 2018', note: '', audioSrc: 'audio/archive/05-my-biggest-challenges-2018-09-27.m4a' },
 ];

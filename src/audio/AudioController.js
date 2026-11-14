@@ -512,8 +512,10 @@ class AudioControllerImpl {
         };
         a.onended = done;
         a.onerror = () => {
-          this._clip = null;
-          this._placeholderVoice(id, seconds, phone).then(resolve);
+          // never substitute a fake voice for a real recording
+          if (this._clip === a) this._clip = null;
+          this._set({ clipPlaying: null });
+          resolve();
         };
         a.play().catch(a.onerror);
       });

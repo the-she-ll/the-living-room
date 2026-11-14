@@ -263,6 +263,14 @@ export const SESSIONS = [
     sleeve: ['#8A3319', '#D49B24'],
     feel: { bpm: 118, swing: 0.3 },
     story: 'When rents were high and wages were low, Harlem families threw rent parties. Guests paid a small fee at the door, food came out of the kitchen, and a piano player held court in the front room. Stride pianists like Fats Waller and James P. Johnson played these parties, and by morning the rent was covered.',
+    images: [
+      {
+        src: 'images/sessions/willie-the-lion-smith-1947.jpg',
+        caption: 'Stride pianist Willie “The Lion” Smith at the piano, around 1947. Smith came up playing Harlem rent parties.',
+        credit: 'William P. Gottlieb, c. January 1947. William P. Gottlieb Collection, Library of Congress. Public domain, via Wikimedia Commons',
+        url: 'https://commons.wikimedia.org/wiki/File:Willie_Smith_(Gottlieb_07921).jpg',
+      },
+    ],
   },
   {
     id: 'jackson-street',

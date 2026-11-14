@@ -102,7 +102,7 @@ export const FREQUENCIES = {
     ],
     photo: 'images/frequencies/phone.jpg',
     photoCaption: 'The rotary dial: every call home began with a finger in the hole and a slow spin back.',
-    photoCredit: 'Photo via Wikimedia Commons, from the Wikipedia article “Rotary dial.” Sepia tone added.',
+    photoCredit: 'Photo by R Sull (Dhscommtech), own work, via Wikimedia Commons (Wikipedia article “Rotary dial”). Sepia tone added.',
     photoSourceUrl: 'https://en.wikipedia.org/wiki/Rotary_dial',
     reflection: 'Whose voice did you always hope was on the other end of the line?',
   },

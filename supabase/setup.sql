@@ -11,8 +11,12 @@ create table if not exists public.guestbook_entries (
   id         uuid primary key default gen_random_uuid(),
   text       text not null check (char_length(text) between 1 and 160),
   name       text check (name is null or char_length(name) between 1 and 40),
+  prompt     text check (prompt is null or char_length(prompt) between 1 and 40),
   created_at timestamptz not null default now()
 );
+-- which guestbook question a memory answers (added after launch)
+alter table public.guestbook_entries add column if not exists prompt text
+  check (prompt is null or char_length(prompt) between 1 and 40);
 create index if not exists guestbook_entries_created_at_idx on public.guestbook_entries (created_at desc);
 
 -- Words that can't be posted. match_prefix = true also blocks words that
@@ -106,7 +110,7 @@ create policy "Admins can delete memories" on public.guestbook_entries
 -- columns a visitor fills in can be sent.
 revoke all on public.guestbook_entries from anon, authenticated;
 grant select on public.guestbook_entries to anon, authenticated;
-grant insert (text, name) on public.guestbook_entries to anon, authenticated;
+grant insert (text, name, prompt) on public.guestbook_entries to anon, authenticated;
 grant delete on public.guestbook_entries to authenticated;
 revoke all on public.guestbook_blocklist, public.guestbook_admins from anon, authenticated;
 grant execute on function public.guestbook_is_admin() to anon, authenticated;

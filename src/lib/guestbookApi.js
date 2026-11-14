@@ -12,11 +12,14 @@ const headers = () => ({
   'Content-Type': 'application/json',
 });
 
-const toEntry = (r) => ({ id: r.id, text: r.text, name: r.name || '', at: Date.parse(r.created_at) });
+const toEntry = (r) => ({ id: r.id, text: r.text, name: r.name || '', prompt: r.prompt || null, at: Date.parse(r.created_at) });
 
 /** Newest first. */
-export async function fetchEntries(limit = 100) {
-  const res = await fetch(`${base()}?select=id,text,name,created_at&order=created_at.desc&limit=${limit}`, { headers: headers() });
+export async function fetchEntries(limit = 200) {
+  const url = (cols) => `${base()}?select=${cols}&order=created_at.desc&limit=${limit}`;
+  let res = await fetch(url('id,text,name,prompt,created_at'), { headers: headers() });
+  // database not updated with the prompt column yet: still show the reel
+  if (res.status === 400) res = await fetch(url('id,text,name,created_at'), { headers: headers() });
   if (!res.ok) throw new Error(`guestbook ${res.status}`);
   return (await res.json()).map(toEntry);
 }
@@ -25,14 +28,17 @@ export async function fetchEntries(limit = 100) {
  * Post a memory. Rejects with err.code = 'blocked' (word filter), 'slow'
  * (flood guard) or 'failed' (network / anything else).
  */
-export async function addEntry({ text, name }) {
+export async function addEntry({ text, name, prompt }) {
+  const post = (body) =>
+    fetch(base(), { method: 'POST', headers: { ...headers(), Prefer: 'return=representation' }, body: JSON.stringify(body) });
   let res;
   try {
-    res = await fetch(base(), {
-      method: 'POST',
-      headers: { ...headers(), Prefer: 'return=representation' },
-      body: JSON.stringify({ text, name: name || null }),
-    });
+    res = await post({ text, name: name || null, prompt: prompt || null });
+    // database not updated with the prompt column yet: post without it
+    if (!res.ok && [400, 401, 403].includes(res.status)) {
+      const body = await res.clone().json().catch(() => ({}));
+      if (/prompt/.test(`${body.message || ''}`)) res = await post({ text, name: name || null });
+    }
   } catch {
     throw Object.assign(new Error('offline'), { code: 'failed' });
   }

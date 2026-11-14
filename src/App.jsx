@@ -59,7 +59,7 @@ export default function App() {
   const [tuning, setTuning] = useState(null); // { id, isNew }
   const [openId, setOpenId] = useState(null);
   const [guestbookOpen, setGuestbookOpen] = useState(false);
-  const [guestbookPrompt, setGuestbookPrompt] = useState(null); // a frequency's question, or null for random
+  const [guestbookPrompt, setGuestbookPrompt] = useState(null); // a frequency id for its question, or null for random
   const [arOpen, setArOpen] = useState(false);
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [onboarded, setOnboarded] = useLocalStorage(STORAGE_KEYS.onboarded, false);
@@ -281,13 +281,13 @@ export default function App() {
         discoveredIds={discovered}
         onClose={() => setOpenId(null)}
         onOpenGuestbook={() => {
-          setGuestbookPrompt(FREQUENCIES[openId]?.reflection || null);
+          setGuestbookPrompt(openId);
           setOpenId(null);
           setGuestbookOpen(true);
         }}
       />
       <CreditsDrawer open={creditsOpen} onClose={() => setCreditsOpen(false)} />
-      <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} book={book} prompt={guestbookPrompt} />
+      <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} book={book} promptId={guestbookPrompt} />
 
       {arOpen && (
         <ARView

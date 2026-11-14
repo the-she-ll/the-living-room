@@ -3,14 +3,19 @@ import { Globe, Send } from 'lucide-react';
 import Drawer from './Drawer';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { GUESTBOOK, STORAGE_KEYS } from '../data/site';
+import { FREQUENCIES, FREQUENCY_ORDER } from '../data/frequencies';
 import { addEntry, fetchEntries, sharedGuestbook } from '../lib/guestbookApi';
 import { hasBlockedWords } from '../lib/wordFilter';
 
-const PROMPTS = [
-  'What was the most sacred object in your family living room?',
-  'What record always meant it was Sunday?',
-  'What was never, ever to be sat on?',
-  'Whose voice do you still hear on the other end of the line?',
+/**
+ * Every guestbook question has an id that's saved with each memory, so the
+ * guestbook only shows answers to the question in front of you. The four
+ * frequencies' own questions use the frequency's id.
+ */
+export const PROMPTS = [
+  ...FREQUENCY_ORDER.map((id) => ({ id, text: FREQUENCIES[id].reflection })),
+  { id: 'sacred', text: 'What was the most sacred object in your family living room?' },
+  { id: 'sat-on', text: 'What was never, ever to be sat on?' },
 ];
 
 const MAX = 160;
@@ -57,7 +62,7 @@ export function TapeReelMarquee({ entries, onOpen }) {
   );
 }
 
-export default function Guestbook({ open, onClose, book, prompt: givenPrompt }) {
+export default function Guestbook({ open, onClose, book, promptId }) {
   const { entries, add, shared } = book;
   const [text, setText] = useState('');
   const [name, setName] = useState('');
@@ -67,8 +72,9 @@ export default function Guestbook({ open, onClose, book, prompt: givenPrompt }) 
   // From a frequency's Reflect button: that frequency's question. Opened any
   // other way (the reel, the family-photo tag): a random prompt each time.
   const randomPrompt = useMemo(() => PROMPTS[Math.floor(Math.random() * PROMPTS.length)], [open]); // eslint-disable-line react-hooks/exhaustive-deps
-  const prompt = givenPrompt || randomPrompt;
-  const recent = entries.slice(0, 6);
+  const prompt = PROMPTS.find((p) => p.id === promptId) || randomPrompt;
+  // Only answers to this same question (the bottom reel shows everything).
+  const answers = entries.filter((e) => e.prompt === prompt.id);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -82,7 +88,7 @@ export default function Guestbook({ open, onClose, book, prompt: givenPrompt }) 
     setSending(true);
     setError(null);
     try {
-      await add({ text: clean, name: who });
+      await add({ text: clean, name: who, prompt: prompt.id });
       setText('');
       setThanks(true);
       setTimeout(() => setThanks(false), 3000);
@@ -98,22 +104,8 @@ export default function Guestbook({ open, onClose, book, prompt: givenPrompt }) 
       <div className="space-y-5 pb-6">
         <div className="rounded-xl bg-teal p-4 text-parchment">
           <p className="text-[11px] tracking-[0.2em] text-mustard-light uppercase">Reflection prompt</p>
-          <p className="font-display mt-1 text-xl leading-snug font-bold">{prompt}</p>
+          <p className="font-display mt-1 text-xl leading-snug font-bold">{prompt.text}</p>
         </div>
-
-        {recent.length > 0 && (
-          <div>
-            <p className="mb-2 text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">From other visitors</p>
-            <div className="no-scrollbar -mx-5 flex snap-x scroll-px-5 gap-2.5 overflow-x-auto px-5 pb-1">
-              {recent.map((e) => (
-                <figure key={e.id || e.at} className="w-[72%] max-w-[260px] shrink-0 snap-start rounded-lg border border-ink/10 bg-white/55 p-3">
-                  <p className="font-display text-[15px] leading-snug italic">“{e.text}”</p>
-                  <figcaption className="mt-1 text-xs opacity-60">{e.name || 'Anonymous'}</figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        )}
 
         <form onSubmit={submit} className="space-y-3">
           <label className="block">
@@ -168,12 +160,13 @@ export default function Guestbook({ open, onClose, book, prompt: givenPrompt }) 
         </form>
 
         <div>
-          <h3 className="font-display mb-2 text-lg font-black">On the reel</h3>
-          {entries.length === 0 ? (
-            <p className="text-sm opacity-60">{shared ? 'No memories yet. Yours could be the first.' : 'No memories yet from this phone. Yours could be the first.'}</p>
+          <h3 className="font-display text-lg font-black">Other visitors’ answers</h3>
+          <p className="mb-2 text-xs opacity-60">To this same question · scroll to read more</p>
+          {answers.length === 0 ? (
+            <p className="text-sm opacity-60">No answers to this question yet. Yours could be the first.</p>
           ) : (
             <ul className="space-y-2">
-              {entries.map((e) => (
+              {answers.map((e) => (
                 <li key={e.id || e.at} className="rounded-lg border border-ink/10 bg-white/50 p-3">
                   <p className="font-display text-[16px] leading-snug italic">“{e.text}”</p>
                   <p className="mt-1 text-xs opacity-60">
@@ -217,13 +210,13 @@ export function useGuestbook() {
   }, []);
 
   const add = useCallback(
-    async ({ text, name }) => {
+    async ({ text, name, prompt }) => {
       if (sharedGuestbook) {
-        const entry = await addEntry({ text, name });
+        const entry = await addEntry({ text, name, prompt });
         setRemote((prev) => [entry, ...prev.filter((e) => e.id !== entry.id)]);
         return;
       }
-      setLocal((prev) => [{ text, name, at: Date.now() }, ...(Array.isArray(prev) ? prev : [])].slice(0, 200));
+      setLocal((prev) => [{ text, name, prompt, at: Date.now() }, ...(Array.isArray(prev) ? prev : [])].slice(0, 200));
     },
     [setLocal],
   );

@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import Drawer from './Drawer';
-import { FREQUENCIES, FREQUENCY_ORDER, MAGAZINES, PANTHEON } from '../data/frequencies';
+import { FREQUENCIES, FREQUENCY_ORDER, MAGAZINES, PANTHEON, SESSIONS } from '../data/frequencies';
 import { RIGHTS, SITE } from '../data/site';
 
 /** Full rights notice + per-item credits, generated from the content data. */
@@ -63,6 +63,27 @@ export default function CreditsDrawer({ open, onClose, zClass }) {
                     )}
                   </li>
                 ))}
+            </ul>
+          </section>
+        )}
+
+        {SESSIONS.some((r) => r.images?.length) && (
+          <section>
+            <h3 className="font-display mb-1 text-lg font-black">Record crate photographs</h3>
+            <ul className="space-y-2 text-sm">
+              {SESSIONS.flatMap((r) => (r.images || []).map((img) => ({ ...img, record: r.title }))).map((img) => (
+                <li key={img.src}>
+                  {img.record}: {img.credit}.
+                  {img.url && (
+                    <>
+                      {' '}
+                      <a href={img.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
+                        source <ExternalLink size={11} />
+                      </a>
+                    </>
+                  )}
+                </li>
+              ))}
             </ul>
           </section>
         )}

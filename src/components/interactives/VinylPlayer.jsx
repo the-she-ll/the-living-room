@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { SESSIONS } from '../../data/frequencies';
+import { asset } from '../../data/site';
 import AudioController from '../../audio/AudioController';
 import { useAudio } from '../../hooks/useAudio';
 
@@ -115,6 +116,21 @@ export default function VinylPlayer({ accent }) {
             </p>
             <p className="font-display mt-1 text-xl font-black">{s.title}</p>
             <p className="mt-2 text-[15px] leading-relaxed">{s.story}</p>
+            {s.images?.length > 0 && (
+              <div className="no-scrollbar -mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+                {s.images.map((img) => (
+                  <figure key={img.src} className={`shrink-0 snap-start ${s.images.length > 1 ? 'w-[78%]' : 'w-full'}`}>
+                    <div className="film-grain overflow-hidden rounded-md border-[6px] border-white bg-white shadow-md sepia-[0.25]">
+                      <img src={asset(img.src)} alt={img.caption} loading="lazy" className="block h-auto w-full" />
+                    </div>
+                    <figcaption className="mt-1.5 text-xs leading-snug italic opacity-75">
+                      {img.caption}
+                      <span className="mt-0.5 block text-[10px] not-italic opacity-80">{img.credit}</span>
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid h-full min-h-[116px] place-items-center text-center">

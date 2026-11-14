@@ -250,7 +250,9 @@ export const MAGAZINES = [
 /**
  * The record crate on The Rhythm & Sanctuary: each record is a story about
  * music made and shared in homes. Dropping the needle plays that record's own
- * original piece (src/audio/sessions.js) at its tempo and swing.
+ * original piece (src/audio/sessions.js) at its tempo and swing. Optional
+ * `images` (src, caption, credit, url) show with the story and are listed on
+ * the Credits & rights page.
  */
 export const SESSIONS = [
   {
@@ -270,6 +272,20 @@ export const SESSIONS = [
     sleeve: ['#1A535C', '#E8BD5A'],
     feel: { bpm: 112, swing: 0.08 },
     story: 'Before the world knew the Jackson 5, the brothers practiced in their family’s small house on Jackson Street in Gary, Indiana. They rehearsed for hours under their father’s strict direction, played talent shows and local clubs, and in 1969 signed with Motown. Their first stage was home.',
+    images: [
+      {
+        src: 'images/sessions/jackson-5-1969.jpg',
+        caption: 'The Jackson 5 in December 1969, announcing their appearance on The Ed Sullivan Show.',
+        credit: 'Bernie Ilson, Inc., public relations, New York, 1969. Public domain, via Wikimedia Commons',
+        url: 'https://commons.wikimedia.org/wiki/File:Jackson_5_1969.jpg',
+      },
+      {
+        src: 'images/sessions/jackson-5-1976.jpg',
+        caption: 'The Jackson 5 in June 1976.',
+        credit: 'Photographer unknown, 1976. Public domain, via Wikimedia Commons',
+        url: 'https://commons.wikimedia.org/wiki/File:Jackson_5.jpg',
+      },
+    ],
   },
   {
     id: 'hitsville',

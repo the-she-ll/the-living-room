@@ -49,7 +49,10 @@ export const FREQUENCIES = {
       'They shared the table with other titles. Ebony (1945) celebrated Black achievement in glossy photo essays. Black Enterprise, founded by Earl G. Graves in 1970, covered Black business, careers and wealth-building. Black World, called Negro Digest until 1970, published the essays, poetry and criticism of the Black Arts Movement until it closed in 1976.',
       'Displayed on the coffee table, these magazines were more than reading material. They were an archive, a conversation starter for guests, and proof of a thriving Black public sphere. Many families kept back issues for decades.',
     ],
-    photoCaption: 'Coffee table still life (archival image placeholder)',
+    photo: 'images/frequencies/table.jpg',
+    photoCaption: 'Vintage issues of Ebony, Jet, Time, Life and more, spread across a table.',
+    photoCredit: 'Photo via The Fayetteville Observer, February 18, 2017 (Myron B. Pitts column). Sepia tone added.',
+    photoSourceUrl: 'https://www.fayobserver.com/story/opinion/columns/more-voices/2017/02/18/myron-b-pitts-box-old/22085575007/',
     reflection: 'What did your family keep on the coffee table, and what did it say about who you were?',
   },
 

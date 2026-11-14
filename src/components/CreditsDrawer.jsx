@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import Drawer from './Drawer';
-import { MAGAZINES, PANTHEON } from '../data/frequencies';
+import { FREQUENCIES, FREQUENCY_ORDER, MAGAZINES, PANTHEON } from '../data/frequencies';
 import { RIGHTS, SITE } from '../data/site';
 
 /** Full rights notice + per-item credits, generated from the content data. */
@@ -24,8 +24,8 @@ export default function CreditsDrawer({ open, onClose, zClass }) {
 
         {covers.length > 0 && (
           <section>
-            <h3 className="font-display mb-1 text-lg font-black">Magazine covers</h3>
-            <ul className="space-y-1 text-sm">
+            <h3 className="font-display mb-1 text-lg font-black">Magazines</h3>
+            <ul className="space-y-2 text-sm">
               {covers.map((m, i) => (
                 <li key={i}>
                   {m.masthead}, {m.date} · © {m.credit}
@@ -37,8 +37,32 @@ export default function CreditsDrawer({ open, onClose, zClass }) {
                       </a>
                     </>
                   )}
+                  {m.insideImage && m.insideCredit && <span className="block opacity-80">Inside photo: {m.insideCredit}.</span>}
                 </li>
               ))}
+            </ul>
+          </section>
+        )}
+
+        {FREQUENCY_ORDER.some((id) => FREQUENCIES[id].photoCredit) && (
+          <section>
+            <h3 className="font-display mb-1 text-lg font-black">Story photographs</h3>
+            <ul className="space-y-2 text-sm">
+              {FREQUENCY_ORDER.map((id) => FREQUENCIES[id])
+                .filter((f) => f.photoCredit)
+                .map((f) => (
+                  <li key={f.id}>
+                    {f.title}: {f.photoCredit}
+                    {f.photoSourceUrl && (
+                      <>
+                        {' '}
+                        <a href={f.photoSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
+                          source <ExternalLink size={11} />
+                        </a>
+                      </>
+                    )}
+                  </li>
+                ))}
             </ul>
           </section>
         )}

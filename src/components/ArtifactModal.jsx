@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Lock, MessageCircleHeart, Square } from 'lucide-react';
 import Drawer from './Drawer';
 import { FREQUENCIES } from '../data/frequencies';
+import { asset } from '../data/site';
 import AudioController from '../audio/AudioController';
 import { useAudio } from '../hooks/useAudio';
 import ArtifactIllustration from './ArtifactIllustration';
@@ -60,9 +61,12 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
         <div className="space-y-5 pb-6">
           <figure>
             <div className="film-grain overflow-hidden rounded-lg border-[10px] border-white bg-white shadow-[0_10px_25px_rgba(0,0,0,0.25)] sepia-[0.35]">
-              <ArtifactIllustration id={f.id} />
+              {f.photo ? <img src={asset(f.photo)} alt={f.photoCaption} className="block h-auto w-full" /> : <ArtifactIllustration id={f.id} />}
             </div>
-            <figcaption className="mt-2 text-center text-xs italic opacity-60">{f.photoCaption}</figcaption>
+            <figcaption className="mt-2 text-center text-xs italic opacity-60">
+              {f.photoCaption}
+              {f.photoCredit && <span className="mt-0.5 block text-[10px] not-italic opacity-80">{f.photoCredit}</span>}
+            </figcaption>
           </figure>
           {f.archive.map((p, i) => (
             <p

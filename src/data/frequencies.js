@@ -256,7 +256,8 @@ export const LINER_NOTES = [
 
 /**
  * The artist's own archive: voice recordings of intimate moments with
- * herself and her friends, one per digit on the rotary dial.
+ * herself and her friends, one per digit on the rotary dial. Add a slot
+ * with the next digit to extend the dial; it updates its own numbering.
  *
  * For each: put the file in public/audio/archive/ (mp3 or m4a) and set
  * `audioSrc` (e.g. 'audio/archive/recording-1.m4a'), its `title` and the
@@ -266,7 +267,8 @@ export const LINER_NOTES = [
 export const VOICEMAILS = [
   { digit: 1, title: 'My Evolving Views on Technology', date: 'August 20, 2024', note: '', audioSrc: 'audio/archive/01-my-evolving-views-on-technology-2024-08-20.m4a' },
   { digit: 2, title: 'When Friends See You Even When You Don’t', date: 'April 9, 2021', note: '', audioSrc: 'audio/archive/02-when-friends-see-you-2021-04-09.m4a' },
-  { digit: 3, title: '', date: '', note: '', audioSrc: '' },
+  { digit: 3, title: 'My Sister’s Keeper, a Fellow Workaholic', date: 'August 24, 2020', note: '', audioSrc: 'audio/archive/03-my-sisters-keeper-2020-08-24.m4a' },
   { digit: 4, title: 'Navigating New Love: Talks with Friends', date: 'May 28, 2020', note: '', audioSrc: 'audio/archive/04-navigating-new-love-2020-05-28.m4a' },
   { digit: 5, title: 'My Biggest Challenges in an Interview', date: 'September 27, 2018', note: '', audioSrc: 'audio/archive/05-my-biggest-challenges-2018-09-27.m4a' },
+  { digit: 6, title: 'My Last of Love', date: 'July 12, 2021', note: '', audioSrc: 'audio/archive/06-my-last-of-love-2021-07-12.m4a' },
 ];

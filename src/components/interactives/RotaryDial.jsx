@@ -4,6 +4,8 @@ import { VOICEMAILS } from '../../data/frequencies';
 import AudioController from '../../audio/AudioController';
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+// highest number with a recording slot (dial 1..LAST)
+const LAST = Math.max(...VOICEMAILS.map((v) => v.digit));
 const SPACING = 28;
 const FIRST = -20; // angle of the "1" hole (deg, SVG coords)
 const STOP = 50; // finger-stop angle
@@ -13,7 +15,7 @@ const holeAngle = (k) => FIRST - k * SPACING;
 
 /**
  * Working rotary dial. Tap a finger hole: the dial winds to the stop, clicks
- * back, rings, then plays a voicemail-style oral history (1–5).
+ * back, rings, then plays a recording from the artist's archive (1–LAST).
  */
 export default function RotaryDial({ accent, clipPlaying }) {
   const [rot, setRot] = useState(0);
@@ -112,7 +114,7 @@ export default function RotaryDial({ accent, clipPlaying }) {
               DIGITS.map((d, k) => {
                 const a = (holeAngle(k) * Math.PI) / 180;
                 return (
-                  <text key={d} x={Math.cos(a) * R} y={Math.sin(a) * R + 5} textAnchor="middle" fontSize="15" fontWeight="800" fill={d >= 1 && d <= 5 ? '#8a3319' : '#2e1c1488'} fontFamily="DM Sans, sans-serif">
+                  <text key={d} x={Math.cos(a) * R} y={Math.sin(a) * R + 5} textAnchor="middle" fontSize="15" fontWeight="800" fill={d >= 1 && d <= LAST ? '#8a3319' : '#2e1c1488'} fontFamily="DM Sans, sans-serif">
                     {d}
                   </text>
                 );
@@ -122,7 +124,7 @@ export default function RotaryDial({ accent, clipPlaying }) {
           <circle r="36" fill="#f2e6cc" />
           <text y="-8" textAnchor="middle" fontSize="8" fontWeight="700" fill="#2e1c14" letterSpacing="1.5">PORCH LINE</text>
           <text y="6" textAnchor="middle" fontSize="12" fontWeight="900" fill="#8a3319" fontFamily="Fraunces, serif">LIFELINE</text>
-          <text y="19" textAnchor="middle" fontSize="7" fill="#2e1c14aa">DIAL 1–5</text>
+          <text y="19" textAnchor="middle" fontSize="7" fill="#2e1c14aa">DIAL 1–{LAST}</text>
           {/* finger stop */}
           <path d="M0 0 L8 0 L4 -16 Z" fill="#c0c0c0" stroke="#555" transform={`rotate(${STOP + 90}) translate(-4 -97)`} />
         </svg>
@@ -150,7 +152,7 @@ export default function RotaryDial({ accent, clipPlaying }) {
               <Voicemail size={16} /> From my own archive
             </p>
             <p className="mt-1.5 leading-relaxed">
-              These voices are recordings of intimate moments I’ve shared with myself and with the friends who hold me close. Pick up the line and dial 1–5 to listen in.
+              These voices are recordings of intimate moments I’ve shared with myself and with the friends who hold me close. Pick up the line and dial 1–{LAST} to listen in.
             </p>
           </div>
         )}
@@ -163,7 +165,7 @@ export default function RotaryDial({ accent, clipPlaying }) {
         {status === 'missing' && (
           <p className="text-sm">
             <span className="led-text block text-xl">BEEP · BEEP · BEEP</span>
-            The number you have dialed is not in service. Try 1 through 5.
+            The number you have dialed is not in service. Try 1 through {LAST}.
           </p>
         )}
         {status === 'soon' && (

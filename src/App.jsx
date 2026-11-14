@@ -92,6 +92,18 @@ export default function App() {
     if (stems.length) AudioController.startGroove(stems);
   }, []);
 
+  // Leaving a story page or the AR Lens brings the radio back if it was on
+  // (a record or voice may have taken over inside).
+  const insideSomething = Boolean(openId || arOpen || tuning);
+  useEffect(() => {
+    if (insideSomething) return undefined;
+    const t = setTimeout(() => {
+      const st = AudioController.state;
+      if (st.radioWanted && !st.grooveOn) startRadio();
+    }, 450); // after the drawer has closed and its record has stopped
+    return () => clearTimeout(t);
+  }, [insideSomething, startRadio]);
+
   const finishTuning = useCallback(() => {
     const t = tuningRef.current;
     setTuning(null);

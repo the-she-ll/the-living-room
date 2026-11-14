@@ -54,6 +54,7 @@ class AudioControllerImpl {
       ambientOn: false,
       grooveOn: false,
       grooveOwner: null, // 'radio' or 'record': only one music source plays at a time
+      radioWanted: false, // the radio should be on (cleared only by the visitor's Stop)
       stems: { bass: false, drums: false, shaker: false, keys: false, pad: false },
       clipPlaying: null,
     };
@@ -504,12 +505,19 @@ class AudioControllerImpl {
     this._step %= this.steps;
     if (stems) this.setStems(stems);
     if (this.state.grooveOwner !== owner) this._set({ grooveOwner: owner });
+    if (owner === 'radio' && !this.state.radioWanted) this._set({ radioWanted: true });
     if (this._timer) return;
     this._step = 0;
     this._nextTime = this.ctx.currentTime + 0.1;
     this._timer = setInterval(() => this._schedule(), LOOKAHEAD_MS);
     this._set({ grooveOn: true });
     this._applyAmbient();
+  }
+
+  /** The visitor chose silence: stop and don't bring the radio back. */
+  stopRadio() {
+    this._set({ radioWanted: false });
+    this.stopGroove();
   }
 
   stopGroove() {

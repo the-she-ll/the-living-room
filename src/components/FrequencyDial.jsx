@@ -94,7 +94,7 @@ export default function FrequencyDial({ discovered, lastTuned, onOpen, onShowClu
 
   const togglePlay = async () => {
     await AudioController.unlock();
-    if (grooveOn) AudioController.stopGroove();
+    if (grooveOn) AudioController.stopRadio();
     else if (tunedStems.length) AudioController.startGroove(tunedStems);
   };
 

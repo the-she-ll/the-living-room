@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Send } from 'lucide-react';
+import { Globe, Send } from 'lucide-react';
 import Drawer from './Drawer';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { GUESTBOOK, STORAGE_KEYS } from '../data/site';
@@ -57,14 +57,18 @@ export function TapeReelMarquee({ entries, onOpen }) {
   );
 }
 
-export default function Guestbook({ open, onClose, book }) {
+export default function Guestbook({ open, onClose, book, prompt: givenPrompt }) {
   const { entries, add, shared } = book;
   const [text, setText] = useState('');
   const [name, setName] = useState('');
   const [thanks, setThanks] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
-  const prompt = useMemo(() => PROMPTS[Math.floor(Math.random() * PROMPTS.length)], [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  // From a frequency's Reflect button: that frequency's question. Opened any
+  // other way (the reel, the family-photo tag): a random prompt each time.
+  const randomPrompt = useMemo(() => PROMPTS[Math.floor(Math.random() * PROMPTS.length)], [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  const prompt = givenPrompt || randomPrompt;
+  const recent = entries.slice(0, 6);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -96,6 +100,20 @@ export default function Guestbook({ open, onClose, book }) {
           <p className="text-[11px] tracking-[0.2em] text-mustard-light uppercase">Reflection prompt</p>
           <p className="font-display mt-1 text-xl leading-snug font-bold">{prompt}</p>
         </div>
+
+        {recent.length > 0 && (
+          <div>
+            <p className="mb-2 text-[11px] font-bold tracking-[0.2em] uppercase opacity-60">From other visitors</p>
+            <div className="no-scrollbar -mx-5 flex snap-x scroll-px-5 gap-2.5 overflow-x-auto px-5 pb-1">
+              {recent.map((e) => (
+                <figure key={e.id || e.at} className="w-[72%] max-w-[260px] shrink-0 snap-start rounded-lg border border-ink/10 bg-white/55 p-3">
+                  <p className="font-display text-[15px] leading-snug italic">“{e.text}”</p>
+                  <figcaption className="mt-1 text-xs opacity-60">{e.name || 'Anonymous'}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
 
         <form onSubmit={submit} className="space-y-3">
           <label className="block">
@@ -131,6 +149,14 @@ export default function Guestbook({ open, onClose, book }) {
               {ERRORS[error] || ERRORS.failed}
             </p>
           )}
+          {shared && (
+            <p className="flex items-start gap-2 rounded-lg bg-mustard/20 px-3 py-2.5 text-[13px] leading-snug">
+              <Globe size={16} className="mt-0.5 shrink-0" />
+              <span>
+                <b>This is public.</b> Your memory, and your name if you add one, will scroll on the reel for everyone visiting. Please don’t include other people’s full names or contact details.
+              </span>
+            </p>
+          )}
           <button
             type="submit"
             disabled={!text.trim() || sending}
@@ -138,11 +164,7 @@ export default function Guestbook({ open, onClose, book }) {
           >
             <Send size={16} /> {sending ? 'Recording…' : thanks ? 'Recorded to tape. Thank you.' : 'Add to the Reel'}
           </button>
-          <p className="text-[11px] opacity-60">
-            {shared
-              ? 'Your memory (and name, if you add one) will be shared with everyone visiting the exhibition. Please don’t include other people’s full names or contact details.'
-              : 'Memories are saved on this device only.'}
-          </p>
+          {!shared && <p className="text-[11px] opacity-60">Memories are saved on this device only.</p>}
         </form>
 
         <div>

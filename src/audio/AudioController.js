@@ -264,9 +264,15 @@ class AudioControllerImpl {
   _applyAmbient() {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
-    const audible = this.state.ambientOn && !this.state.grooveOn;
+    const audible = this.state.ambientOn && !this.state.grooveOn && !this._hush;
     this.ambientBus.gain.cancelScheduledValues(t);
     this.ambientBus.gain.setTargetAtTime(audible ? 0.18 : 0, t, audible ? 0.8 : 0.3);
+  }
+
+  /** Silence the crackle too (the porch phone wants a quiet room). */
+  setHush(on) {
+    this._hush = on;
+    this._applyAmbient();
   }
 
   /** A short burst of radio static, for turning the tuning knob between stations. */

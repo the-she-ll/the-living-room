@@ -59,6 +59,7 @@ export default function App() {
   const [tuning, setTuning] = useState(null); // { id, isNew }
   const [openId, setOpenId] = useState(null);
   const [guestbookOpen, setGuestbookOpen] = useState(false);
+  const [guestbookPrompt, setGuestbookPrompt] = useState(null); // a frequency's question, or null for random
   const [arOpen, setArOpen] = useState(false);
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [onboarded, setOnboarded] = useLocalStorage(STORAGE_KEYS.onboarded, false);
@@ -86,10 +87,15 @@ export default function App() {
   // found so far (plus `extra`, just found), unless a record is spinning.
   const discoveredRef = useRef(discovered);
   discoveredRef.current = discovered;
+  const openIdRef = useRef(openId);
+  openIdRef.current = openId;
   const startRadio = useCallback((extra) => {
     if (AudioController.state.grooveOwner === 'record') return;
     const stems = FREQUENCY_ORDER.filter((id) => id === extra || discoveredRef.current.includes(id)).flatMap((id) => FREQUENCIES[id].stems);
-    if (stems.length) AudioController.startGroove(stems);
+    if (!stems.length) return;
+    // the porch stays quiet for the ringing; the radio starts when they leave
+    if (openIdRef.current === 'phone') AudioController._set({ radioWanted: true });
+    else AudioController.startGroove(stems);
   }, []);
 
   // Leaving a story page or the AR Lens brings the radio back if it was on
@@ -103,6 +109,16 @@ export default function App() {
     }, 450); // after the drawer has closed and its record has stopped
     return () => clearTimeout(t);
   }, [insideSomething, startRadio]);
+
+  // The Porch Lifeline: no music (or crackle) while it's open, so visitors hear
+  // the phone ring before each voice. The radio comes back when they leave.
+  const onPorch = openId === 'phone' && discovered.includes('phone');
+  useEffect(() => {
+    if (!onPorch) return undefined;
+    AudioController.setHush(true);
+    if (AudioController.state.grooveOwner === 'radio') AudioController.stopGroove(); // keeps radioWanted
+    return () => AudioController.setHush(false);
+  }, [onPorch]);
 
   const finishTuning = useCallback(() => {
     const t = tuningRef.current;
@@ -250,7 +266,13 @@ export default function App() {
       {/* guestbook tape reel, docked */}
       <div className="safe-bottom fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-umber-deep via-umber-deep/90 to-transparent px-3 pt-6">
         <div className="mx-auto max-w-3xl">
-          <TapeReelMarquee entries={book.entries} onOpen={() => setGuestbookOpen(true)} />
+          <TapeReelMarquee
+            entries={book.entries}
+            onOpen={() => {
+              setGuestbookPrompt(null);
+              setGuestbookOpen(true);
+            }}
+          />
         </div>
       </div>
 
@@ -259,12 +281,13 @@ export default function App() {
         discoveredIds={discovered}
         onClose={() => setOpenId(null)}
         onOpenGuestbook={() => {
+          setGuestbookPrompt(FREQUENCIES[openId]?.reflection || null);
           setOpenId(null);
           setGuestbookOpen(true);
         }}
       />
       <CreditsDrawer open={creditsOpen} onClose={() => setCreditsOpen(false)} />
-      <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} book={book} />
+      <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} book={book} prompt={guestbookPrompt} />
 
       {arOpen && (
         <ARView

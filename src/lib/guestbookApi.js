@@ -6,7 +6,9 @@ export const sharedGuestbook = Boolean(GUESTBOOK.supabaseUrl && GUESTBOOK.supaba
 const base = () => `${GUESTBOOK.supabaseUrl.replace(/\/+$/, '')}/rest/v1/guestbook_entries`;
 const headers = () => ({
   apikey: GUESTBOOK.supabaseAnonKey,
-  Authorization: `Bearer ${GUESTBOOK.supabaseAnonKey}`,
+  // Legacy anon keys are JWTs and go in Authorization too; the newer
+  // sb_publishable_ keys belong in the apikey header only.
+  ...(GUESTBOOK.supabaseAnonKey.startsWith('sb_') ? {} : { Authorization: `Bearer ${GUESTBOOK.supabaseAnonKey}` }),
   'Content-Type': 'application/json',
 });
 

@@ -34,7 +34,7 @@ export const SITE = {
  */
 export const GUESTBOOK = {
   supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseAnonKey: 'sb_publishable_uB4SgB_nApGQ0eARjUQOVg_Aybpg7u-',
   refreshSeconds: 20, // how often open phones check for new memories
 };
 

@@ -2,6 +2,7 @@ import { ExternalLink } from 'lucide-react';
 import Drawer from './Drawer';
 import { FREQUENCIES, FREQUENCY_ORDER, MAGAZINES, PANTHEON, SESSIONS } from '../data/frequencies';
 import { RIGHTS, SITE } from '../data/site';
+import { COLLAGE_SOURCES } from '../data/collage';
 
 /** Full rights notice + per-item credits, generated from the content data. */
 export default function CreditsDrawer({ open, onClose, zClass }) {
@@ -21,6 +22,21 @@ export default function CreditsDrawer({ open, onClose, zClass }) {
             .
           </p>
         )}
+
+        <section>
+          <h3 className="font-display mb-1 text-lg font-black">Collaged in the painting</h3>
+          <p className="mb-2 text-sm opacity-80">The painting incorporates images found at these sources. All rights remain with their original creators.</p>
+          <ul className="space-y-2 text-sm">
+            {COLLAGE_SOURCES.map((c) => (
+              <li key={c.url}>
+                {c.label} · via{' '}
+                <a href={c.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline">
+                  {c.via} <ExternalLink size={11} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {covers.length > 0 && (
           <section>

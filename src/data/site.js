@@ -33,7 +33,7 @@ export const SITE = {
  * Leave them empty and the guestbook keeps memories on each phone only.
  */
 export const GUESTBOOK = {
-  supabaseUrl: '',
+  supabaseUrl: 'https://hqnpewonpnztdgaxlcmf.supabase.co',
   supabaseAnonKey: 'sb_publishable_uB4SgB_nApGQ0eARjUQOVg_Aybpg7u-',
   refreshSeconds: 20, // how often open phones check for new memories
 };

@@ -194,9 +194,9 @@ export const MAGAZINES = [
     image: 'images/covers/jet-1972-02-10.jpg',
     credit: 'Jet, February 10, 1972, Johnson Publishing Company. Cover scan via Google Books',
     sourceUrl: 'https://books.google.com/books?id=xlsDAAAAMBAJ&printsec=frontcover',
-    insideImage: '',
-    insideCaption: '',
-    insideCredit: '',
+    insideImage: 'images/covers/jet-1972-02-10-inside.jpg',
+    insideCaption: 'Chisholm on the campaign trail in early 1972, the year she ran for president.',
+    insideCredit: 'Jet, February 10, 1972, p. 12',
   },
   {
     masthead: 'EBONY',

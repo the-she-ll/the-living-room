@@ -58,8 +58,12 @@ export default function RotaryDial({ accent, clipPlaying }) {
         setStatus('ringing');
         AudioController.playSoundbite('phone');
         later(() => {
+          if (!vm.audioSrc) {
+            setStatus('soon');
+            return;
+          }
           setStatus('playing');
-          AudioController.playClip(`vm-${digit}`, vm.audioSrc, 5, { phone: true });
+          AudioController.playClip(`vm-${digit}`, vm.audioSrc, 30);
         }, 1900);
       }, back * 1000 + 150);
     }, 480);
@@ -141,9 +145,14 @@ export default function RotaryDial({ accent, clipPlaying }) {
 
       <div className="mt-4 min-h-[132px] rounded-xl bg-umber p-4 text-parchment" aria-live="polite">
         {status === 'idle' && !active && (
-          <p className="flex items-center gap-2 text-sm text-parchment/80">
-            <Voicemail size={16} /> Dial 1–5 to hear voicemail-style oral histories from the community grapevine.
-          </p>
+          <div className="text-sm text-parchment/85">
+            <p className="flex items-center gap-2 font-bold text-mustard">
+              <Voicemail size={16} /> From my own archive
+            </p>
+            <p className="mt-1.5 leading-relaxed">
+              These voices are recordings of intimate moments I’ve shared with myself and with the friends who hold me close. Pick up the line and dial 1–5 to listen in.
+            </p>
+          </div>
         )}
         {status === 'dialing' && <p className="led-text text-2xl">DIALING {active}…</p>}
         {status === 'ringing' && (
@@ -157,19 +166,24 @@ export default function RotaryDial({ accent, clipPlaying }) {
             The number you have dialed is not in service. Try 1 through 5.
           </p>
         )}
-        {(status === 'playing' || (status === 'idle' && vm)) && vm && (
+        {status === 'soon' && (
+          <p className="text-sm">
+            <span className="led-text block text-xl">NO ANSWER… YET</span>
+            Recording {active} from my archive is coming soon.
+          </p>
+        )}
+        {(status === 'playing' || (status === 'idle' && vm?.audioSrc)) && vm && (
           <div className="animate-fade">
             <div className="flex items-center justify-between">
-              <p className="text-[11px] tracking-[0.2em] text-mustard uppercase">Message {vm.digit} · {vm.duration}</p>
+              <p className="text-[11px] tracking-[0.2em] text-mustard uppercase">From my archive · Recording {vm.digit}</p>
               {status === 'playing' && (
                 <button type="button" onClick={hangUp} className="flex items-center gap-1 rounded-full bg-sienna px-2.5 py-1 text-xs font-bold">
                   <PhoneOff size={12} /> Hang up
                 </button>
               )}
             </div>
-            <p className="mt-1 text-sm font-bold">{vm.caller}</p>
-            <p className="font-display mt-1 text-[17px] leading-snug italic">{vm.transcript}</p>
-            {!vm.audioSrc && <p className="mt-2 text-[10px] italic opacity-50">Placeholder audio & composite transcript. Replace with recorded oral histories.</p>}
+            {vm.title && <p className="font-display mt-1 text-lg font-bold">{vm.title}</p>}
+            {vm.note && <p className="mt-1 text-sm leading-snug text-parchment/80">{vm.note}</p>}
           </div>
         )}
       </div>

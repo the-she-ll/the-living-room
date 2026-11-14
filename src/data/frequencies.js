@@ -92,7 +92,7 @@ export const FREQUENCIES = {
     stems: ['keys'],
     stemLabel: 'Electric Piano',
     interactive: 'rotary',
-    interactiveLabel: 'Dial an Oral History',
+    interactiveLabel: 'Dial Into My Archive',
     clue:
       'Follow the curly cord to the family’s switchboard. One ring meant news, two rings meant hurry, and the whole block heard before supper.',
     archive: [
@@ -255,14 +255,18 @@ export const LINER_NOTES = [
 ];
 
 /**
- * PLACEHOLDER oral-history "voicemails". These are illustrative composites,
- * not recorded testimony. Replace with oral histories collected for the
- * exhibition (with consent) and set `audioSrc`.
+ * The artist's own archive: voice recordings of intimate moments with
+ * herself and her friends, one per digit on the rotary dial.
+ *
+ * For each: put the file in public/audio/archive/ (mp3 or m4a) and set
+ * `audioSrc` (e.g. 'audio/archive/recording-1.m4a'). `title` and `note` are
+ * optional short words shown while it plays. Only include friends who have
+ * agreed to be heard. Slots without audio say "coming soon".
  */
 export const VOICEMAILS = [
-  { digit: 1, caller: 'Aunt on the long-distance line', duration: '0:42', transcript: '“Baby, tell your mama the bus gets in Tuesday. I’m bringing the pound cake. Don’t let your daddy eat it before I get there.”', audioSrc: '' },
-  { digit: 2, caller: 'Church phone tree', duration: '0:31', transcript: '“Sister Johnson’s back in the hospital. Pass it down the list: meals Monday through Thursday, and prayer circle at seven.”', audioSrc: '' },
-  { digit: 3, caller: 'Neighbor across the street', duration: '0:19', transcript: '“Your boy’s out here after the streetlights, and I already called his grandmother, so he knows.”', audioSrc: '' },
-  { digit: 4, caller: 'Grandfather, Sunday evening', duration: '0:55', transcript: '“When I came up from Alabama I had one suitcase and a phone number on a scrap of paper. That number was family before I ever met them.”', audioSrc: '' },
-  { digit: 5, caller: 'Block club captain', duration: '0:27', transcript: '“Meeting moved to the Wilsons’ front room. Bring a folding chair. And tell everybody: we register voters Saturday.”', audioSrc: '' },
+  { digit: 1, title: '', note: '', audioSrc: '' },
+  { digit: 2, title: '', note: '', audioSrc: '' },
+  { digit: 3, title: '', note: '', audioSrc: '' },
+  { digit: 4, title: '', note: '', audioSrc: '' },
+  { digit: 5, title: '', note: '', audioSrc: '' },
 ];

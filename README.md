@@ -43,7 +43,7 @@ Write one URL to each NFC sticker (any NFC writer app works, e.g. NFC Tools):
 |---|---|
 | **Logo** | `public/logo.webp` (full logo, loading screen) and `public/logo-mark.webp` (emblem only: header, `favicon.png`, `apple-touch-icon.png`). Paths are set in `SITE` in `src/data/site.js`. |
 | Titles, history text, riddles, reflection prompts | `src/data/frequencies.js` → `FREQUENCIES` |
-| Notable figures (Living Pantheon) | `PANTHEON`. Add `image` and `audioSrc` (e.g. `audio/pantheon/baldwin.mp3`) |
+| Trailblazers (Portraits of Power) | `PANTHEON`. Add `image` and `audioSrc` (e.g. `audio/pantheon/baldwin.mp3`) |
 | **Magazine covers** (Jet, Ebony, Essence, Black Enterprise, Black World) | `MAGAZINES` + scans in `public/images/covers/` (see the README there). Used by both the web flip viewer and the AR lens. |
 | Rights notice | `RIGHTS` in `src/data/site.js`: short line (opening screen, footer, magazine viewers) and the full **Credits & rights** text. Set `contactEmail` to add a takedown/credit contact. |
 | Meeting notes, liner notes, voicemails | `FRONT_ROOM_NOTES`, `MAGAZINES` (`image`), `LINER_NOTES`, `VOICEMAILS` (`audioSrc`) |

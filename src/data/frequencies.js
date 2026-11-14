@@ -14,13 +14,13 @@ export const FREQUENCIES = {
   portraits: {
     id: 'portraits',
     band: '88.1',
-    title: 'The Living Pantheon',
-    subtitle: 'Notable Figures',
+    title: 'Portraits of Power',
+    subtitle: 'Voices That Changed the World',
     color: '#9C6B12',
     stems: ['pad'],
     stemLabel: 'Warm Organ Pad',
     interactive: 'pantheon',
-    interactiveLabel: 'Flip Through the Pantheon',
+    interactiveLabel: 'Meet the Trailblazers',
     clue:
       'Look up to the cedar wall, where brass frames keep watch. The faces there were hung on purpose: proof, in every room, that greatness lived in the family tree.',
     archive: [
@@ -35,8 +35,8 @@ export const FREQUENCIES = {
   table: {
     id: 'table',
     band: '97.9',
-    title: 'The Coffee Table Pulpit',
-    subtitle: 'Jet, Ebony & the Black Press',
+    title: 'The People’s Press',
+    subtitle: 'Black Magazines That Told Our Story',
     color: '#8A3319',
     stems: ['shaker'],
     stemLabel: 'Page-Turn Shaker',
@@ -101,7 +101,7 @@ export const FREQUENCIES = {
 /* ------------------------------------------------------------------ */
 
 /**
- * The Living Pantheon: four trailblazers. Shown in the portrait AR overlay
+ * Portraits of Power: four trailblazers. Shown in the portrait AR overlay
  * (flipping over the painted portrait) and in the web gallery.
  *
  * - `image`: in public/images/pantheon/. Leave '' to show "portrait coming soon".

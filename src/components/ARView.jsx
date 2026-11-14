@@ -40,7 +40,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleM
   const [tracking, setTracking] = useState(null);
   const [lastFound, setLastFound] = useState(null);
   const [mag, setMag] = useState(null); // coffee-table flip-through state
-  const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
+  const [pan, setPan] = useState(null); // portrait (Portraits of Power) state
   const [deck, setDeck] = useState(null); // turntable visuals state
   const { clipPlaying, grooveOn } = useAudio();
   const [panInfo, setPanInfo] = useState(false); // portrait panel starts collapsed; visitors tap "Learn More"
@@ -193,7 +193,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleM
                   <ChevronLeft size={20} />
                 </button>
                 <div className="min-w-0 flex-1 text-center leading-tight">
-                  {panInfo && <p className="led-text text-sm">{pan.index + 1} OF {pan.total} · THE LIVING PANTHEON</p>}
+                  {panInfo && <p className="led-text text-sm">{pan.index + 1} OF {pan.total} · PORTRAITS OF POWER</p>}
                   <p className="font-display text-xl font-black">{person.name}</p>
                   {panInfo && (
                     <p className="text-[11px] text-parchment/70">

@@ -223,12 +223,15 @@ export const MAGAZINES = [
   },
   {
     masthead: 'BLACK WORLD',
-    date: 'Issue date',
-    coverLine: 'Cover story headline',
-    story: 'A two-to-four sentence summary of this issue’s cover story: who was on the cover, what happened, and why it mattered to readers.',
-    image: '',
-    credit: 'Black World (formerly Negro Digest), Johnson Publishing Company',
-    sourceUrl: '',
+    date: 'November 1973',
+    coverLine: 'Special Issue: Black Music',
+    story: 'Black World, the Johnson magazine once called Negro Digest, devoted this special issue to Black music and dedicated it to Duke Ellington. Musicians and scholars wrote the pages themselves, including drummer Max Roach, saxophonists Archie Shepp and Marion Brown, and historian Eileen Southern. Special issues like this one helped readers see Black music as an art form with its own history, thinkers and traditions.',
+    image: 'images/covers/black-world-1973-11.jpg',
+    credit: 'Black World, November 1973, Johnson Publishing Company. Cover art signed Culverson Blair. Cover scan via Google Books',
+    sourceUrl: 'https://books.google.com/books?id=TjoDAAAAMBAJ&printsec=frontcover',
+    insideImage: 'images/covers/black-world-1973-11-inside.jpg',
+    insideCaption: 'Drawing that opened Marion Brown’s essay on improvisation and the aural tradition in Black music.',
+    insideCredit: 'Black World, November 1973, p. 14',
   },
 ];
 

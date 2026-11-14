@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Disc3, Lock, MessageCircleHeart, Newspaper, Phone, Square } from 'lucide-react';
+import { Disc3, Lock, MessageCircleHeart, Newspaper, Phone } from 'lucide-react';
 
 import Drawer from './Drawer';
 import { FREQUENCIES } from '../data/frequencies';
@@ -106,15 +106,6 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
         </div>
       )}
 
-      {clipPlaying && (
-        <button
-          type="button"
-          onClick={() => AudioController.stopClip()}
-          className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-bold text-parchment shadow-xl"
-        >
-          <Square size={12} /> Stop audio
-        </button>
-      )}
     </Drawer>
   );
 }

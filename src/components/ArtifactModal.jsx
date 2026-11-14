@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Lock, MessageCircleHeart, Radio, Sparkles, Square } from 'lucide-react';
+import { Lock, MessageCircleHeart, Square } from 'lucide-react';
 import Drawer from './Drawer';
 import { FREQUENCIES } from '../data/frequencies';
 import AudioController from '../audio/AudioController';
@@ -17,29 +17,20 @@ const INTERACTIVES = {
   rotary: RotaryDial,
 };
 
-const TABS = [
-  { id: 'explore', label: 'Explore', icon: Sparkles },
-  { id: 'archive', label: 'The Archive', icon: BookOpen },
-  { id: 'reflect', label: 'Reflect', icon: MessageCircleHeart },
-];
 
 /**
  * Slide-up drawer for one artifact. Locked artifacts only say how to find them,
  * so the hunt still has to happen in front of the painting.
  */
-export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onOpenGuestbook, onPlayRadio }) {
+export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onOpenGuestbook }) {
   // Keep the last artifact rendered while the drawer animates closed.
   const [shownId, setShownId] = useState(frequencyId);
   useEffect(() => {
     if (frequencyId) setShownId(frequencyId);
   }, [frequencyId]);
   const f = FREQUENCIES[frequencyId || shownId] || null;
-  const [tab, setTab] = useState('explore');
   const { clipPlaying } = useAudio();
 
-  useEffect(() => {
-    if (frequencyId) setTab('explore');
-  }, [frequencyId]);
   useEffect(() => () => AudioController.stopClip(), [frequencyId]);
 
   if (!f) return null;
@@ -65,84 +56,39 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
           </p>
         </div>
       ) : (
-        <>
-          {/* Tabs */}
-          <div role="tablist" className="sticky top-0 z-10 -mx-5 mb-4 flex gap-1 bg-parchment/95 px-5 py-2 backdrop-blur">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={tab === id}
-                onClick={() => setTab(id)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-2 text-[13px] font-bold transition ${
-                  tab === id ? 'text-parchment shadow' : 'bg-ink/5 text-ink/70'
-                }`}
-                style={tab === id ? { background: f.color } : undefined}
-              >
-                <Icon size={14} /> {label}
-              </button>
-            ))}
+        // One scrolling page: the history first, then the hands-on piece, then Reflect.
+        <div className="space-y-5 pb-6">
+          <figure>
+            <div className="film-grain overflow-hidden rounded-lg border-[10px] border-white bg-white shadow-[0_10px_25px_rgba(0,0,0,0.25)] sepia-[0.35]">
+              <ArtifactIllustration id={f.id} />
+            </div>
+            <figcaption className="mt-2 text-center text-xs italic opacity-60">{f.photoCaption}</figcaption>
+          </figure>
+          {f.archive.map((p, i) => (
+            <p
+              key={i}
+              className={`text-[15px] leading-relaxed ${i === 0 ? 'first-letter:font-display first-letter:float-left first-letter:mr-2 first-letter:text-5xl first-letter:leading-[0.85] first-letter:font-black first-letter:text-sienna' : ''}`}
+            >
+              {p}
+            </p>
+          ))}
+
+          <div className="border-t border-ink/15 pt-5">
+            <h3 className="font-display mb-4 text-xl font-black">{f.interactiveLabel}</h3>
+            <Interactive accent={f.color} clipPlaying={clipPlaying} />
           </div>
 
-          {tab === 'explore' && (
-            <div className="animate-fade space-y-5 pb-6">
-              <h3 className="font-display text-xl font-black">{f.interactiveLabel}</h3>
-              <Interactive accent={f.color} clipPlaying={clipPlaying} />
-
-              <button
-                type="button"
-                onClick={onPlayRadio}
-                className="flex w-full items-center gap-3 rounded-xl bg-umber p-4 text-left text-parchment shadow-lg"
-              >
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">
-                  <Radio size={20} />
-                </span>
-                <span>
-                  <span className="block text-[11px] tracking-[0.2em] text-mustard uppercase">Sound unlocked</span>
-                  <span className="font-display block text-lg leading-snug font-bold">{f.stemLabel} joined your radio</span>
-                  <span className="block text-xs text-parchment/60">Tap to hear it with everything you’ve found →</span>
-                </span>
-              </button>
-            </div>
-          )}
-
-          {tab === 'archive' && (
-            <div className="animate-fade space-y-4 pb-6">
-              <figure>
-                <div className="film-grain overflow-hidden rounded-lg border-[10px] border-white bg-white shadow-[0_10px_25px_rgba(0,0,0,0.25)] sepia-[0.35]">
-                  <ArtifactIllustration id={f.id} />
-                </div>
-                <figcaption className="mt-2 text-center text-xs italic opacity-60">{f.photoCaption}</figcaption>
-              </figure>
-              {f.archive.map((p, i) => (
-                <p
-                  key={i}
-                  className={`text-[15px] leading-relaxed ${i === 0 ? 'first-letter:font-display first-letter:float-left first-letter:mr-2 first-letter:text-5xl first-letter:leading-[0.85] first-letter:font-black first-letter:text-sienna' : ''}`}
-                >
-                  {p}
-                </p>
-              ))}
-            </div>
-          )}
-
-          {tab === 'reflect' && (
-            <div className="animate-fade space-y-4 pb-6">
-              <div className="rounded-xl p-5 text-parchment" style={{ background: f.color }}>
-                <p className="text-[11px] tracking-[0.2em] uppercase opacity-80">Reflection</p>
-                <p className="font-display mt-2 text-2xl leading-snug font-bold">{f.reflection}</p>
-              </div>
-              <p className="text-sm opacity-75">Take a moment with someone beside you, or leave your memory in the Living Guestbook so it plays on for the next visitor.</p>
-              <button
-                type="button"
-                onClick={onOpenGuestbook}
-                className="w-full rounded-full bg-ink py-3.5 font-bold text-parchment"
-              >
-                Add to the Living Guestbook
-              </button>
-            </div>
-          )}
-        </>
+          <div className="rounded-xl p-5 text-parchment" style={{ background: f.color }}>
+            <p className="font-display text-xl leading-snug font-bold">{f.reflection}</p>
+            <button
+              type="button"
+              onClick={onOpenGuestbook}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-parchment py-3.5 font-bold text-ink"
+            >
+              <MessageCircleHeart size={18} /> Reflect
+            </button>
+          </div>
+        </div>
       )}
 
       {clipPlaying && (

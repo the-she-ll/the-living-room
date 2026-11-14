@@ -161,13 +161,6 @@ export default function App() {
     setOnboarded(true);
   };
 
-  // "Sound unlocked" in a story drawer: close it and play the radio's mix.
-  const playRadio = async () => {
-    setOpenId(null);
-    await AudioController.unlock();
-    AudioController.startGroove(FREQUENCY_ORDER.filter((id) => discovered.includes(id)).flatMap((id) => FREQUENCIES[id].stems));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const resetProgress = () => {
     if (window.confirm('Reset your discovered frequencies on this device?')) {
@@ -256,7 +249,6 @@ export default function App() {
           setOpenId(null);
           setGuestbookOpen(true);
         }}
-        onPlayRadio={playRadio}
       />
       <CreditsDrawer open={creditsOpen} onClose={() => setCreditsOpen(false)} />
       <Guestbook open={guestbookOpen} onClose={() => setGuestbookOpen(false)} book={book} />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Lock, MessageCircleHeart, Square } from 'lucide-react';
+import { Disc3, Lock, MessageCircleHeart, Newspaper, Phone, Square } from 'lucide-react';
+
 import Drawer from './Drawer';
 import { FREQUENCIES } from '../data/frequencies';
 import { asset } from '../data/site';
@@ -10,6 +11,10 @@ import PantheonGallery from './interactives/PantheonGallery';
 import MagazineFlip from './interactives/MagazineFlip';
 import VinylPlayer from './interactives/VinylPlayer';
 import RotaryDial from './interactives/RotaryDial';
+import RaisedFist from './RaisedFist';
+
+// Icons for the 'how to unlock' hint on locked frequencies.
+const HINT_ICONS = { fist: RaisedFist, magazine: Newspaper, vinyl: Disc3, phone: Phone };
 
 const INTERACTIVES = {
   pantheon: PantheonGallery,
@@ -50,11 +55,17 @@ export default function ArtifactModal({ frequencyId, discoveredIds, onClose, onO
     >
       {!discovered ? (
         <div className="mb-6 rounded-xl border-2 border-dashed border-ink/25 p-5 text-center">
-          <Lock className="mx-auto mb-2 opacity-60" />
+          {(() => {
+            const HintIcon = HINT_ICONS[f.hintIcon] || Lock;
+            return (
+              <span className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full text-parchment shadow-md" style={{ background: f.color }}>
+                <HintIcon size={f.hintIcon === 'fist' ? 36 : 30} />
+              </span>
+            );
+          })()}
           <p className="font-display text-lg font-bold">This frequency is still static.</p>
-          <p className="mt-1 text-sm opacity-75">
-            Find the artifact in the painting and tap its hidden NFC tag, point the AR Lens at it, or tap it on the Explore Map.
-          </p>
+          <p className="font-display mt-2 text-[17px] leading-snug">{f.hint}</p>
+          <p className="mt-2 text-xs opacity-60">No tap feature on your phone? Find it on the Explore Map instead.</p>
         </div>
       ) : (
         // One scrolling page: the history first, then the hands-on piece, then Reflect.

@@ -14,6 +14,8 @@ export const FREQUENCIES = {
   portraits: {
     id: 'portraits',
     band: '88.1',
+    hintIcon: 'fist',
+    hint: 'Look for the Black Power fist on the portrait of the woman, and tap your phone on it.',
     title: 'Portraits of Power',
     subtitle: 'Voices That Changed the World',
     color: '#9C6B12',
@@ -38,6 +40,8 @@ export const FREQUENCIES = {
   table: {
     id: 'table',
     band: '97.9',
+    hintIcon: 'magazine',
+    hint: 'Tap your phone on one of the magazines on the coffee table.',
     title: 'The People’s Press',
     subtitle: 'Black Magazines That Told Our Story',
     color: '#8A3319',
@@ -62,6 +66,8 @@ export const FREQUENCIES = {
   turntable: {
     id: 'turntable',
     band: '101.3',
+    hintIcon: 'vinyl',
+    hint: 'Tap your phone on the turntable, or on one of the vinyl records next to it.',
     title: 'The Rhythm & Sanctuary',
     subtitle: 'Parliament-Funkadelic & Soul',
     color: '#1A535C',
@@ -86,6 +92,8 @@ export const FREQUENCIES = {
   phone: {
     id: 'phone',
     band: '106.7',
+    hintIcon: 'phone',
+    hint: 'Tap your phone on the center of the rotary phone.',
     title: 'The Porch Lifeline',
     subtitle: 'Rotary Telephone',
     color: '#B4502C',

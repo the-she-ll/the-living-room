@@ -303,6 +303,14 @@ export const SESSIONS = [
     sleeve: ['#4F5D2F', '#F2E6CC'],
     feel: { bpm: 104, swing: 0.05 },
     story: 'Berry Gordy bought a house on West Grand Boulevard, turned the ground floor into a recording studio and offices, and lived upstairs. He hung a sign out front that read “Hitsville U.S.A.” The Supremes, Marvin Gaye and Stevie Wonder all recorded in that house, proof that a home could launch a sound heard around the world.',
+    images: [
+      {
+        src: 'images/sessions/hitsville-control-room-2005.jpg',
+        caption: 'Hitsville’s control room in Detroit, where engineers balanced Motown sessions from 1959 to 1972. The chalkboard still lists the day’s sessions.',
+        credit: 'Photo by Global Reactions, 2005, via Flickr and Wikimedia Commons, licensed CC BY 2.0 (creativecommons.org/licenses/by/2.0). Sepia tone added',
+        url: 'https://creativecommons.org/licenses/by/2.0/',
+      },
+    ],
   },
   {
     id: 'sedgwick',

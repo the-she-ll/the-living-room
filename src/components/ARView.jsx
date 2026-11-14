@@ -43,7 +43,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleM
   const [pan, setPan] = useState(null); // portrait (Living Pantheon) state
   const [deck, setDeck] = useState(null); // turntable visuals state
   const { clipPlaying, grooveOn } = useAudio();
-  const [panInfo, setPanInfo] = useState(false); // portrait panel starts collapsed; visitors tap "Show info"
+  const [panInfo, setPanInfo] = useState(false); // portrait panel starts collapsed; visitors tap "Learn More"
   const [panCredits, setPanCredits] = useState(false); // photo credit revealed?
   const swipeX = useRef(null);
   const onFoundRef = useRef(onFound);
@@ -206,7 +206,7 @@ export default function ARView({ onClose, onFound, onOpen, onFallback, onToggleM
                     aria-expanded={panInfo}
                     className="mt-0.5 text-[11px] font-bold text-mustard"
                   >
-                    {panInfo ? 'Hide info ▾' : 'Show info ▴'}
+                    {panInfo ? 'Hide info ▾' : 'Learn More ▴'}
                   </button>
                 </div>
                 <button type="button" onClick={portraits.next} aria-label="Next trailblazer" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mustard text-umber">

@@ -100,7 +100,10 @@ export const FREQUENCIES = {
       'Phone trees helped communities act. During the 1955–56 Montgomery bus boycott, organizers used phone calls and a dispatch system to run carpools for thousands of riders. Churches, block clubs and family networks relied on the same chains of calls to share news, set up care for the sick and raise money.',
       'The phone also kept oral tradition alive. Elders passed down stories, recipes, warnings and blessings by voice. The "grapevine" could be gossip, but it was also an information network that held communities together.',
     ],
-    photoCaption: 'Rotary telephone on side table (archival image placeholder)',
+    photo: 'images/frequencies/phone.jpg',
+    photoCaption: 'The rotary dial: every call home began with a finger in the hole and a slow spin back.',
+    photoCredit: 'Photo via Wikimedia Commons, from the Wikipedia article “Rotary dial.” Sepia tone added.',
+    photoSourceUrl: 'https://en.wikipedia.org/wiki/Rotary_dial',
     reflection: 'Whose voice did you always hope was on the other end of the line?',
   },
 };

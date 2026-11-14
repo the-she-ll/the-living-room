@@ -5,7 +5,8 @@ import AudioController from '../audio/AudioController';
 
 /** Hotspot positions in the 400×300 illustration (percent-based). */
 const HOTSPOTS = {
-  portraits: { x: 33, y: 22 },
+  // a see-through ring, so the fist on the woman's shirt shows inside it
+  portraits: { x: 36, y: 22.4, ring: true },
   table: { x: 47, y: 78 },
   turntable: { x: 80, y: 52 },
   phone: { x: 9, y: 58 },
@@ -56,7 +57,7 @@ function LivingRoomScene() {
 
       {/* portraits wall */}
       {[
-        [80, 30, 34, 42], [124, 22, 40, 52], [174, 34, 30, 36], [100, 82, 26, 30], [150, 84, 34, 28],
+        [80, 30, 34, 42], [176, 34, 30, 36], [100, 86, 26, 30], [150, 90, 34, 28],
       ].map(([x, y, w, h], i) => (
         <g key={i}>
           <rect x={x} y={y} width={w} height={h} fill="#c99a2e" />
@@ -65,6 +66,23 @@ function LivingRoomScene() {
           <path d={`M${x + w * 0.22} ${y + h - 3} Q${x + w / 2} ${y + h * 0.52} ${x + w * 0.78} ${y + h - 3}Z`} fill="#4a2b18" />
         </g>
       ))}
+
+      {/* the featured portrait: the woman with the raised fist on her shirt */}
+      <g>
+        <rect x="118" y="14" width="52" height="68" fill="#c99a2e" />
+        <rect x="121.5" y="17.5" width="45" height="61" fill="#2f6f9e" />
+        <circle cx="144" cy="38" r="13" fill="#1f130c" />
+        <ellipse cx="144" cy="41" rx="7" ry="8.5" fill="#7a4a2e" />
+        <path d="M125 78.5 Q127 58 144 56 Q161 58 163 78.5Z" fill="#8a3319" />
+        <g transform="translate(137.4 59.6) scale(0.55)" fill="#f2e6cc">
+          <path d="M6.3 3.4 8.6 2.6l1.1 4.6-2.3.6z" />
+          <path d="M9.9 2.2l2.4-.2.3 4.9-2.3.2z" />
+          <path d="M13.4 2.3l2.3.6-.9 4.7-2.2-.4z" />
+          <path d="M16.6 3.6l2.1 1-1.9 4-2-.8z" />
+          <path d="M5.2 8.3l12.9-.2 1.4 1.6-.8 4.4-2.6 2.2H7.6L5 13.4z" />
+          <path d="M7.9 16.8h8.4l-.4 5.6H8.4z" />
+        </g>
+      </g>
 
       {/* side table + rotary phone */}
       <rect x="18" y="160" width="40" height="6" fill="#5a3520" />
@@ -169,6 +187,19 @@ export default function CanvasMap({ discovered, onTuneIn, onOpen }) {
               style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
             >
               {!found && <span className="absolute inset-1 animate-hotspot rounded-full border-2 border-amber" />}
+              {pos.ring ? (
+                <span
+                  className={`relative block h-8 w-8 rounded-full border-[3px] shadow-[0_0_10px_rgba(255,179,71,0.8)] transition ${isSel ? 'scale-125' : ''} ${
+                    found ? 'border-parchment' : 'border-amber'
+                  }`}
+                >
+                  {found && (
+                    <span className="absolute -top-2 -right-2 grid h-4 w-4 place-items-center rounded-full border border-parchment text-parchment" style={{ background: f.color }}>
+                      <Check size={10} strokeWidth={3} />
+                    </span>
+                  )}
+                </span>
+              ) : (
               <span
                 className={`relative grid h-7 w-7 place-items-center rounded-full border-2 text-xs font-black shadow-lg transition ${
                   isSel ? 'scale-125' : ''
@@ -177,6 +208,7 @@ export default function CanvasMap({ discovered, onTuneIn, onOpen }) {
               >
                 {found ? <Check size={14} strokeWidth={3} /> : '?'}
               </span>
+              )}
             </button>
           );
         })}
@@ -197,6 +229,7 @@ export default function CanvasMap({ discovered, onTuneIn, onOpen }) {
                 <X size={16} />
               </button>
             </div>
+            {!selFound && sel.hint && <p className="mt-1 text-[15px] leading-snug">{sel.hint}</p>}
             <button
               type="button"
               onClick={() => (selFound ? onOpen(selected) : onTuneIn(selected))}

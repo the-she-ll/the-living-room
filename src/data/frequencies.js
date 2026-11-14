@@ -73,7 +73,10 @@ export const FREQUENCIES = {
       'In the 1970s, George Clinton’s Parliament-Funkadelic built an Afrofuturist world on albums like "Mothership Connection" (1975) and "One Nation Under a Groove" (1978). P-Funk imagined Black people in space, in charge and free, while cities around the country faced disinvestment, redlining and police violence.',
       'Music in the living room was spiritual armor and community therapy. Dancing in your own home, to your own records, with your own people, was a kind of sanctuary that no outside force could take away.',
     ],
-    photoCaption: 'Console stereo & record crate (archival image placeholder)',
+    photo: 'images/frequencies/turntable.jpg',
+    photoCaption: 'Dancers fill the floor as Erskine Hawkins’s band plays, the same joy families carried home on records.',
+    photoCredit: 'Photo via Rosie Lesso, “What Was the Harlem Renaissance?”, TheCollector.com, January 25, 2023. Sepia tone added.',
+    photoSourceUrl: 'https://www.thecollector.com/rosielesso/',
     reflection: 'Which record always meant it was Sunday at your house?',
   },
 

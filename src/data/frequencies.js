@@ -75,7 +75,7 @@ export const FREQUENCIES = {
     ],
     photo: 'images/frequencies/turntable.jpg',
     photoCaption: 'Dancers fill the floor as Erskine Hawkins’s band plays, the same joy families carried home on records.',
-    photoCredit: 'Photo via Rosie Lesso, “What Was the Harlem Renaissance?”, TheCollector.com, January 25, 2023. Sepia tone added.',
+    photoCredit: 'Photograph attributed to William P. Gottlieb (William P. Gottlieb Collection, Library of Congress). Via Rosie Lesso, “What Was the Harlem Renaissance?”, TheCollector.com, January 25, 2023. Sepia tone added.',
     photoSourceUrl: 'https://www.thecollector.com/rosielesso/',
     reflection: 'Which record always meant it was Sunday at your house?',
   },

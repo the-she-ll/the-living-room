@@ -247,9 +247,27 @@ class AudioControllerImpl {
       src.start();
       this._crackle = src;
     }
-    this.ambientBus.gain.cancelScheduledValues(t);
-    this.ambientBus.gain.setTargetAtTime(on ? 0.55 : 0, t, 0.4);
     this._set({ ambientOn: on });
+    this._applyAmbient();
+  }
+
+  /**
+   * The vinyl crackle is quiet, and only fills silence: it fades out while any
+   * music plays and returns when everything stops.
+   */
+  _applyAmbient() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const audible = this.state.ambientOn && !this.state.grooveOn;
+    this.ambientBus.gain.cancelScheduledValues(t);
+    this.ambientBus.gain.setTargetAtTime(audible ? 0.18 : 0, t, audible ? 0.8 : 0.3);
+  }
+
+  /** A short burst of radio static, for turning the tuning knob between stations. */
+  playStatic(strength = 1) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this._noise(this.sfxBus, t, 0.09, { type: 'bandpass', freq: 1400 + Math.random() * 2400, q: 1.5, gain: 0.07 * strength, attack: 0.01 });
   }
 
   /* --------------------------- one-shot sounds ------------------------- */
@@ -486,6 +504,7 @@ class AudioControllerImpl {
     this._nextTime = this.ctx.currentTime + 0.1;
     this._timer = setInterval(() => this._schedule(), LOOKAHEAD_MS);
     this._set({ grooveOn: true });
+    this._applyAmbient();
   }
 
   stopGroove() {
@@ -495,6 +514,7 @@ class AudioControllerImpl {
     this.piece = null;
     this.steps = STEPS;
     this._set({ grooveOn: false, grooveOwner: null });
+    this._applyAmbient();
   }
 
   _schedule() {

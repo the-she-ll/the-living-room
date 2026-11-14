@@ -459,16 +459,21 @@ function storyTexture(m, rightsLine) {
     ctx.fillText(l, 40, y);
     y += 46;
   });
-  ctx.font = '400 25px "DM Sans", sans-serif';
-  y += 14;
-  wrap(ctx, m.story, c.width - 80).slice(0, 14).forEach((l) => {
-    ctx.fillText(l, 40, y);
-    y += 34;
-  });
+  // credits first, so the summary can stop above them and never overlap
   ctx.font = '400 17px "DM Sans", sans-serif';
+  const foot = wrap(ctx, `© ${m.credit}. ${rightsLine}`, c.width - 80).slice(0, 4);
+  const footTop = c.height - 40 - (foot.length - 1) * 22 - 22;
   ctx.globalAlpha = 0.55;
-  const foot = wrap(ctx, `© ${m.credit}. ${rightsLine}`, c.width - 80).slice(0, 3);
   foot.forEach((l, i) => ctx.fillText(l, 40, c.height - 40 - (foot.length - 1 - i) * 22));
+  ctx.globalAlpha = 1;
+  ctx.font = '400 24px "DM Sans", sans-serif';
+  y += 12;
+  const lines = wrap(ctx, m.story, c.width - 80);
+  const fit = Math.max(1, Math.floor((footTop - 10 - y) / 32) + 1);
+  lines.slice(0, fit).forEach((l, i) => {
+    ctx.fillText(i === fit - 1 && lines.length > fit ? `${l.replace(/\s*\S*$/, '')}…` : l, 40, y);
+    y += 32;
+  });
   return toTexture(c);
 }
 

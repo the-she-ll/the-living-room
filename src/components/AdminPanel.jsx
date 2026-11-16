@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, LogOut, Mail, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { GUESTBOOK, SITE } from '../data/site';
 import { sharedGuestbook } from '../lib/guestbookApi';
-import AnalyticsPanel from './AnalyticsPanel';
 
 /**
  * Guestbook admin page: open the site with ?admin. Sign in with a one-time
@@ -17,7 +16,6 @@ export default function AdminPanel() {
   const [query, setQuery] = useState('');
   const [busy, setBusy] = useState(null);
   const [message, setMessage] = useState('');
-  const [tab, setTab] = useState('visitors'); // visitors | guestbook
 
   const exhibitionUrl = window.location.pathname;
   const adminUrl = `${window.location.origin}${window.location.pathname}?admin`;
@@ -111,27 +109,7 @@ export default function AdminPanel() {
           )}
         </div>
         <p className="mt-4 text-[11px] font-bold tracking-[0.2em] text-sienna uppercase">{SITE.title} · Admin</p>
-        <h1 className="font-display text-3xl font-black">{status === 'ready' && tab === 'visitors' ? 'Visitors' : 'Guestbook'}</h1>
-
-        {status === 'ready' && (
-          <div className="mt-3 flex gap-1 rounded-full bg-ink/10 p-1">
-            {[
-              ['visitors', 'Visitors'],
-              ['guestbook', 'Guestbook'],
-            ].map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setTab(id)}
-                className={`flex-1 rounded-full py-2 text-sm font-bold ${tab === id ? 'bg-umber text-parchment' : ''}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {status === 'ready' && tab === 'visitors' && <AnalyticsPanel client={client.current} />}
+        <h1 className="font-display text-3xl font-black">Guestbook</h1>
 
         {!sharedGuestbook && (
           <p className="mt-4 rounded-xl bg-mustard/20 p-4 text-sm">
@@ -169,7 +147,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {status === 'ready' && tab === 'guestbook' && (
+        {status === 'ready' && (
           <div className="mt-4">
             <div className="flex gap-2">
               <label className="flex flex-1 items-center gap-2 rounded-lg border border-ink/20 bg-white/70 px-3">

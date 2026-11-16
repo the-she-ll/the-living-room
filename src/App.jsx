@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookHeart, Nfc, RotateCcw, Sparkles } from 'lucide-react';
 import { FREQUENCIES, FREQUENCY_ORDER } from './data/frequencies';
+import { track } from './lib/analytics';
 import SplashScreen from './components/SplashScreen';
 import Header from './components/Header';
 import FrequencyDial from './components/FrequencyDial';
@@ -50,6 +51,7 @@ const GUESTBOOK_LINK = wantsGuestbook();
 
 // Read once at module load. (StrictMode would otherwise call an initializer twice, after the URL was already cleaned.)
 const DEEP_LINK = takeDeepLink();
+track('visit', { via: DEEP_LINK ? 'nfc' : GUESTBOOK_LINK ? 'guestbook-tag' : 'direct', target: DEEP_LINK || null });
 
 export default function App() {
   const pending = DEEP_LINK;
@@ -69,10 +71,20 @@ export default function App() {
   const { ambientOn } = useAudio();
   const mapRef = useRef(null);
 
+  // analytics: which stories get opened (or checked while still locked), and the AR Lens
+  useEffect(() => {
+    if (openId) track('story_open', { target: openId, via: discovered.includes(openId) ? 'unlocked' : 'locked' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openId]);
+  useEffect(() => {
+    if (arOpen) track('ar_open');
+  }, [arOpen]);
+
   /* ---------------- tuning-in flow (NFC, map, dial) ---------------- */
   const tuneIn = useCallback(
-    (id) => {
+    (id, via = 'map') => {
       const isNew = discover(id);
+      track('found', { target: id, via, seconds: isNew ? 1 : 0 });
       setOpenId(null);
       setLastTuned(id);
       AudioController.playTuneIn();
@@ -129,11 +141,16 @@ export default function App() {
   }, [startRadio]);
 
   const enter = async () => {
+    track('enter', { via: pending ? 'nfc' : GUESTBOOK_LINK ? 'guestbook-tag' : 'direct' });
     await AudioController.unlock();
     if (ambientPref) AudioController.setAmbient(true);
     setEntered(true);
-    if (pending) setTimeout(() => tuneIn(pending), 350);
-    else if (GUESTBOOK_LINK) setTimeout(() => setGuestbookOpen(true), 350);
+    if (pending) setTimeout(() => tuneIn(pending, 'nfc'), 350);
+    else if (GUESTBOOK_LINK)
+      setTimeout(() => {
+        track('guestbook_open', { via: 'tag' });
+        setGuestbookOpen(true);
+      }, 350);
   };
 
   const toggleAmbient = async () => {
@@ -153,6 +170,7 @@ export default function App() {
   const onArFound = useCallback(
     (id) => {
       const isNew = discover(id);
+      track('found', { target: id, via: 'ar', seconds: isNew ? 1 : 0 });
       setLastTuned(id);
       if (isNew) AudioController.playTuneIn();
       else AudioController.playClick();
@@ -269,6 +287,7 @@ export default function App() {
           <TapeReelMarquee
             entries={book.entries}
             onOpen={() => {
+              track('guestbook_open', { via: 'reel' });
               setGuestbookPrompt(null);
               setGuestbookOpen(true);
             }}
@@ -281,6 +300,7 @@ export default function App() {
         discoveredIds={discovered}
         onClose={() => setOpenId(null)}
         onOpenGuestbook={() => {
+          track('guestbook_open', { via: 'reflect', target: openId });
           setGuestbookPrompt(openId);
           setOpenId(null);
           setGuestbookOpen(true);

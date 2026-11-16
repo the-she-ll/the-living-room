@@ -14,6 +14,7 @@
  * from a tap handler before anything else.
  */
 
+import { onLeave, track } from '../lib/analytics';
 import { asset } from '../data/site';
 import { SESSION_PIECES } from './sessions';
 
@@ -47,6 +48,7 @@ export const STEMS = ['bass', 'drums', 'shaker', 'keys', 'pad'];
 
 class AudioControllerImpl {
   constructor() {
+    onLeave(() => this._logClipEnd('left')); // closed the app mid-recording
     this.ctx = null;
     this.listeners = new Set();
     this.state = {
@@ -506,6 +508,8 @@ class AudioControllerImpl {
   startGroove(stems, { owner = 'radio', feel, piece } = {}) {
     if (!this.ctx) return;
     this.setFeel(feel);
+    if (owner === 'record' && piece && piece !== this._pieceKey) track('record_play', { target: piece });
+    this._pieceKey = owner === 'record' ? piece : null;
     this.piece = (piece && SESSION_PIECES[piece]) || null;
     this.steps = this.piece ? this.piece.steps : STEPS;
     this._step %= this.steps;
@@ -522,6 +526,7 @@ class AudioControllerImpl {
 
   /** The visitor chose silence: stop and don't bring the radio back. */
   stopRadio() {
+    track('radio_stop');
     this._set({ radioWanted: false });
     this.stopGroove();
   }
@@ -531,6 +536,7 @@ class AudioControllerImpl {
     this._timer = null;
     this.resetFeel();
     this.piece = null;
+    this._pieceKey = null;
     this.steps = STEPS;
     this._set({ grooveOn: false, grooveOwner: null });
     this._applyAmbient();
@@ -586,12 +592,16 @@ class AudioControllerImpl {
         const a = new Audio(asset(src));
         a.crossOrigin = 'anonymous';
         this._clip = a;
+        this._clipLog = { id, started: Date.now() };
+        track('voice_play', { target: id });
         const done = () => {
+          this._logClipEnd('finished');
           if (this._clip === a) this._set({ clipPlaying: null });
           resolve();
         };
         a.onended = done;
         a.onerror = () => {
+          this._clipLog = null;
           // never substitute a fake voice for a real recording
           if (this._clip === a) this._clip = null;
           this._set({ clipPlaying: null });
@@ -672,7 +682,16 @@ class AudioControllerImpl {
     });
   }
 
+  /** Analytics: how long a recording was listened to, and how it ended. */
+  _logClipEnd(how) {
+    const log = this._clipLog;
+    if (!log) return;
+    this._clipLog = null;
+    track('voice_end', { target: log.id, via: how, seconds: (Date.now() - log.started) / 1000 });
+  }
+
   stopClip() {
+    this._logClipEnd('stopped');
     if (this._clip) {
       this._clip.pause();
       this._clip = null;

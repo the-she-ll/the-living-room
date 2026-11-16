@@ -6,6 +6,7 @@ import { GUESTBOOK, STORAGE_KEYS } from '../data/site';
 import { FREQUENCIES, FREQUENCY_ORDER } from '../data/frequencies';
 import { addEntry, fetchEntries, sharedGuestbook } from '../lib/guestbookApi';
 import { hasBlockedWords } from '../lib/wordFilter';
+import { track } from '../lib/analytics';
 
 /**
  * Every guestbook question has an id that's saved with each memory, so the
@@ -89,6 +90,7 @@ export default function Guestbook({ open, onClose, book, promptId }) {
     setError(null);
     try {
       await add({ text: clean, name: who, prompt: prompt.id });
+      track('guestbook_post', { target: prompt.id });
       setText('');
       setThanks(true);
       setTimeout(() => setThanks(false), 3000);

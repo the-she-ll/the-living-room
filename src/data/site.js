@@ -50,6 +50,7 @@ export const RIGHTS = {
     'The Living Room is a non-commercial, educational art project. It is shared to support learning about Black domestic life, print culture, music and community history in the 1960s and 1970s.',
     'Magazine covers, photographs, quotations, recordings and other historical materials shown here belong to their original creators and copyright holders. They are presented for education, commentary and historical reflection. The (She.LL) does not claim ownership of them, and no endorsement by any rights holder is implied.',
     'Jet, Ebony, Black Enterprise, Black World and Negro Digest are trademarks of their respective owners.',
+    'To learn how the exhibition is used, this app counts visits and interactions anonymously. It stores no names, emails or locations. Guestbook memories are public once posted.',
   ],
 };
 
